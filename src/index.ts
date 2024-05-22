@@ -22,7 +22,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       return id.endsWith('main.ts') || id.endsWith('main.js');
     },
     transform(_source) {
-      if (options?.vueDevtools?.enable) {
+      if (options?.enable && options?.vueDevtools?.enable) {
         const code = `/* eslint-disable */;
         import { devtools } from '@vue/devtools'
         devtools.connect(${options?.vueDevtools?.host}, ${options?.vueDevtools?.port})
