@@ -131,7 +131,9 @@
   "dependencies": {
     "@antfu/eslint-config": "^2.18.1",
     "eslint-plugin-security": "^3.0.0",
-    "unplugin": "^1.5.1"
+    "unplugin": "^1.5.1",
+    "vite-plugin-vconsole": "^2.1.1",
+    "picocolors": "^1.0.1"
   },
   "devDependencies": {
     "@nuxt/kit": "^3.8.2",
@@ -143,12 +145,10 @@
     "esno": "^4.0.0",
     "fast-glob": "^3.3.2",
     "nodemon": "^3.0.2",
-    "picocolors": "^1.0.1",
     "rimraf": "^5.0.5",
     "rollup": "^4.6.1",
     "tsup": "^8.0.1",
     "vite": "^5.0.4",
-    "vite-plugin-vconsole": "^2.1.1",
     "vitest": "^0.34.6",
     "webpack": "^5.89.0"
   }
