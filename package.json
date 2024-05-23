@@ -1,7 +1,7 @@
 {
   "name": "unplugin-dingtalk",
   "type": "module",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "",
   "license": "MIT",
   "homepage": "https://github.com/zcf0508/unplugin-dingtalk#readme",
