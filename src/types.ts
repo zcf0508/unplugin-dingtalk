@@ -6,6 +6,7 @@ export interface Options {
   corpId?: string
   debug?: boolean
   vconsole?: viteVConsoleOptions
+  debugCookies?: string[]
   vueDevtools?: {
     enable?: boolean
     host?: string

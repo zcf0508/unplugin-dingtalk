@@ -25,6 +25,8 @@ interface Options {
   debug?: boolean
   /** @link https://github.com/vadxq/vite-plugin-vconsole#vitevconsole-options */
   vconsole?: viteVConsoleOptions
+  /** 需要调试的 cookies， 避免无法调试 HttpOnly 的 cookie */
+  debugCookies?: string[]
   vueDevtools?: {
     enable?: boolean
     host?: string

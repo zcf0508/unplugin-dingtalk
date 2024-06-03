@@ -6,6 +6,7 @@ import { createUnplugin } from 'unplugin';
 import type { ResolvedConfig } from 'vite';
 import c from 'picocolors';
 import { viteVConsole } from 'vite-plugin-vconsole';
+import cookie from 'cookie';
 import type { Options } from './types';
 
 let config: ResolvedConfig;
@@ -80,6 +81,25 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
         targetURL.searchParams.append('ddtab', 'true');
         if (options?.corpId) {
           targetURL.searchParams.append('corpId', options.corpId);
+        }
+
+        if (options.debugCookies && options.debugCookies.length > 0) {
+          server.middlewares.use((req, res, next) => {
+            // 获取 cookies
+            const cookies = cookie.parse(req.headers.cookie || '');
+
+            // 遍历 cookies 对象，并将每个 cookie 添加到 res 的 setCookie 中
+            for (const [name, value] of Object.entries(cookies)) {
+              if (options.debugCookies && options.debugCookies.length > 0 && options.debugCookies.includes(name)) {
+                const serializedCookie = cookie.serialize(name, value, {
+                  httpOnly: false,
+                });
+                res.setHeader('Set-Cookie', serializedCookie);
+              }
+            }
+
+            next();
+          });
         }
 
         server.middlewares.use('/open-dingtalk', (req, res) => {
