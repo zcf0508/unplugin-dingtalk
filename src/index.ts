@@ -7,6 +7,9 @@ import type { ResolvedConfig } from 'vite';
 import c from 'picocolors';
 import { viteVConsole } from 'vite-plugin-vconsole';
 import cookie from 'cookie';
+// @ts-expect-error missing types
+import { start } from 'chii';
+import { getRandomPort } from 'get-port-please';
 import type { Options } from './types';
 
 let config: ResolvedConfig;
@@ -15,23 +18,51 @@ let devtoolsInstance: ChildProcess | undefined;
 
 const colorUrl = (url: string) => c.green(url.replace(/:(\d+)\//, (_, port) => `:${c.bold(port)}/`));
 
+let availablePort: number;
+
 export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (options) => {
+  const {
+    chii: enableChii = true,
+  } = options || {};
+
+  function debug(...args: Parameters<typeof console.log>) {
+    if (options?.debug) {
+      console.log(`  ${c.yellow('DEBUG')}  `, ...args);
+    }
+  }
+
   const unpluginDing: UnpluginOptions = {
     name: 'unplugin-dingtalk',
     enforce: 'pre',
     transformInclude(id) {
       return id.endsWith('main.ts') || id.endsWith('main.js');
     },
-    transform(_source) {
+    async transform(_source) {
+      if (options?.enable && enableChii) {
+        availablePort = await getRandomPort();
+        debug(`chii server port: ${JSON.stringify({ availablePort })}`);
+        start({
+          port: availablePort,
+        });
+      }
+
       if (options?.enable && options?.vueDevtools?.enable) {
-        const code = `/* eslint-disable */;
-        import { devtools } from '@vue/devtools'
-        devtools.connect(${options?.vueDevtools?.host}, ${options?.vueDevtools?.port})
-        /* eslint-enable */${_source};
-        `;
+        const codes = [
+          `/* eslint-disable */;
+          import { devtools } from '@vue/devtools'
+          devtools.connect(${options?.vueDevtools?.host}, ${options?.vueDevtools?.port});`,
+          options?.enable && enableChii
+            ? `(() => { 
+          const script = document.createElement('script'); 
+          script.src="http://localhost:${availablePort}/target.js"; 
+          document.body.appendChild(script); 
+          })()`
+            : '',
+          `/* eslint-enable */${_source};`,
+        ];
 
         return {
-          code,
+          code: codes.join('\n'),
           map: null, // support source map
         };
       }
@@ -45,15 +76,9 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       configResolved(_config) {
         config = _config;
       },
-      configureServer(server) {
+      async configureServer(server) {
         if (!options?.enable) {
           return;
-        }
-
-        function debug(...args: Parameters<typeof console.log>) {
-          if (options?.debug) {
-            console.log(`  ${c.yellow('DEBUG')}  `, ...args);
-          }
         }
 
         const _printUrls = server.printUrls.bind(server);
@@ -75,6 +100,11 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
                 : ''
             }`,
           )}: ${colorUrl(`http://${source}${base}open-dingtalk`)}`);
+          if (enableChii) {
+            console.log(`  ${c.green('➜')}  ${c.bold(
+              'Click to open chrome devtools',
+            )}: ${colorUrl(`http://${source}${base}__chrome_devtools`)}`);
+          }
         };
 
         const targetURL = new URL(_targetUrl);
@@ -99,6 +129,26 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
             }
 
             next();
+          });
+        }
+
+        if (enableChii) {
+          server.middlewares.use('/__chrome_devtools', async (_req, res) => {
+            try {
+              const raw = await fetch(`http://localhost:${availablePort}/targets`);
+              const data = await raw.json();
+              if (data?.targets.length > 0) {
+                const devToolsUrl = `http://localhost:${availablePort}/front_end/chii_app.html?ws=localhost:${availablePort}/client/${Math.random().toString(20).substring(2, 8)}?target=${data.targets[0].id}&rtc=false`;
+
+                res.writeHead(302, { Location: devToolsUrl });
+                res.end();
+              }
+            }
+            catch (error) {
+              debug(`${error}`);
+              res.writeHead(502);
+              res.end();
+            }
           });
         }
 
@@ -130,12 +180,15 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
     },
   };
 
+  const plugins = [] as UnpluginOptions[];
+
   if (options?.enable && options?.vconsole?.enabled) {
-    return [viteVConsole(options?.vconsole) as UnpluginOptions, unpluginDing];
+    plugins.push(viteVConsole(options?.vconsole) as UnpluginOptions);
   }
-  else {
-    return unpluginDing;
-  }
+
+  plugins.push(unpluginDing);
+
+  return plugins;
 };
 
 export const unplugin = /* #__PURE__ */ createUnplugin(unpluginFactory);

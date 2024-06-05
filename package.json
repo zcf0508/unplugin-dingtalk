@@ -130,8 +130,10 @@
   },
   "dependencies": {
     "@antfu/eslint-config": "^2.18.1",
+    "chii": "^1.10.0",
     "cookie": "^0.6.0",
     "eslint-plugin-security": "^3.0.0",
+    "get-port-please": "^3.1.2",
     "picocolors": "^1.0.1",
     "unplugin": "^1.5.1",
     "vite-plugin-vconsole": "^2.1.1"

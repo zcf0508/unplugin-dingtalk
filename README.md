@@ -7,7 +7,9 @@
 ## 功能
 - [x] 在钉钉内打开调试链接
 - [x] 可选注入 [vConsole](https://github.com/Tencent/vConsole) 用于调试
+- [x] 可选注入 [chii](https://github.com/liriliri/chii) 用于调试
 - [x] 可选打开 [vue-devtools](https://github.com/vuejs/devtools) 用于调试
+- [x] 支持调试 `HttpOnly` cookies
 
 ![images](https://github.com/zcf0508/unplugin-dingtalk/raw/main/images/Snipaste_2024-05-22_11-25-35.png)
 
@@ -27,6 +29,8 @@ interface Options {
   vconsole?: viteVConsoleOptions
   /** 需要调试的 cookies， 避免无法调试 HttpOnly 的 cookie */
   debugCookies?: string[]
+  /** 默认值 `true` */
+  chii?: boolean
   vueDevtools?: {
     enable?: boolean
     host?: string
