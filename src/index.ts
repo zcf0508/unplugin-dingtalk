@@ -1,6 +1,7 @@
 import type { ChildProcess } from 'node:child_process';
 import { exec } from 'node:child_process';
 import process from 'node:process';
+import fetch from 'node-fetch';
 import type { UnpluginFactory, UnpluginOptions } from 'unplugin';
 import { createUnplugin } from 'unplugin';
 import type { ResolvedConfig } from 'vite';
@@ -10,15 +11,17 @@ import cookie from 'cookie';
 // @ts-expect-error missing types
 import { start } from 'chii';
 import { getRandomPort } from 'get-port-please';
-import type { Options } from './types';
+import type { Options, SetupMiddlewares } from './types';
 
 let config: ResolvedConfig;
 
-let devtoolsInstance: ChildProcess | undefined;
-
 const colorUrl = (url: string) => c.green(url.replace(/:(\d+)\//, (_, port) => `:${c.bold(port)}/`));
 
-let availablePort: number;
+export const resovedInfo = {
+  devtoolsInstance: undefined as ChildProcess | undefined,
+  availablePort: undefined as number | undefined,
+  targetURL: undefined as undefined | URL,
+};
 
 export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (options) => {
   const {
@@ -31,18 +34,20 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
     }
   }
 
+  const plugins = [] as UnpluginOptions[];
+
   const unpluginDing: UnpluginOptions = {
     name: 'unplugin-dingtalk',
     enforce: 'pre',
     transformInclude(id) {
-      return id.endsWith('main.ts') || id.endsWith('main.js');
+      return (id.endsWith('main.ts') || id.endsWith('main.js')) && !id.includes('node_modules');
     },
     async transform(_source) {
-      if (options?.enable && enableChii) {
-        availablePort = await getRandomPort();
-        debug(`chii server port: ${JSON.stringify({ availablePort })}`);
+      if (options?.enable && enableChii && !resovedInfo.availablePort) {
+        resovedInfo.availablePort = await getRandomPort();
+        debug(`chii server port: ${JSON.stringify({ availablePort: resovedInfo.availablePort })}`);
         start({
-          port: availablePort,
+          port: resovedInfo.availablePort,
         });
       }
 
@@ -54,7 +59,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
           options?.enable && enableChii
             ? `(() => { 
           const script = document.createElement('script'); 
-          script.src="http://localhost:${availablePort}/target.js"; 
+          script.src="http://localhost:${resovedInfo.availablePort}/target.js"; 
           document.body.appendChild(script); 
           })()`
             : '',
@@ -79,6 +84,12 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       async configureServer(server) {
         if (!options?.enable) {
           return;
+        }
+
+        const availablePort = resovedInfo.availablePort;
+
+        if (options?.enable && options?.vconsole?.enabled) {
+          plugins.push(viteVConsole(options?.vconsole) as UnpluginOptions);
         }
 
         const _printUrls = server.printUrls.bind(server);
@@ -136,7 +147,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
           server.middlewares.use('/__chrome_devtools', async (_req, res) => {
             try {
               const raw = await fetch(`http://localhost:${availablePort}/targets`);
-              const data = await raw.json();
+              const data = await raw.json() as any;
               if (data?.targets.length > 0) {
                 const devToolsUrl = `http://localhost:${availablePort}/front_end/chii_app.html?ws=localhost:${availablePort}/client/${Math.random().toString(20).substring(2, 8)}?target=${data.targets[0].id}&rtc=false`;
 
@@ -158,18 +169,18 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
             Location: `dingtalk://dingtalkclient/page/link?url=${encodeURIComponent(targetURL.toString())}`,
           });
 
-          if (options?.vueDevtools?.enable && !devtoolsInstance) {
-            devtoolsInstance = exec('npx vue-devtools');
+          if (options?.vueDevtools?.enable && !resovedInfo.devtoolsInstance) {
+            resovedInfo.devtoolsInstance = exec('npx vue-devtools');
 
             console.log(`  ${c.green('➜')}  vue-devtools is running. If the devtools has no data, please refresh the page in dingtalk.`);
 
-            devtoolsInstance.on('exit', () => {
-              devtoolsInstance = undefined;
+            resovedInfo.devtoolsInstance.on('exit', () => {
+              resovedInfo.devtoolsInstance = undefined;
             });
 
             process.on('exit', () => {
-              if (devtoolsInstance) {
-                devtoolsInstance.kill();
+              if (resovedInfo.devtoolsInstance) {
+                resovedInfo.devtoolsInstance.kill();
               }
             });
           }
@@ -178,13 +189,46 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
         });
       },
     },
+    webpack(compiler) {
+      if (!options?.enable) {
+        return;
+      }
+
+      const devServerOptions = {
+        host: 'localhost',
+        port: 8080,
+        ...compiler.options.devServer,
+        // @ts-expect-error vuecli
+        ...(process.VUE_CLI_SERVICE?.projectOptions.devServer),
+      };
+      const source = `${devServerOptions.host === '0.0.0.0'
+        ? '127.0.0.1'
+        : devServerOptions.host}:${devServerOptions.port}`;
+      const base = compiler.options.output.publicPath || '/';
+      const _targetUrl = options?.targetUrl ?? `http://${source}${base}`;
+
+      compiler.hooks.done.tap('unplugin-dingtalk', () => {
+        console.log(`  ${c.green('➜')}  ${c.bold(
+          `Open in dingtalk${
+            options?.vueDevtools?.enable
+              ? ' (with vue-devtools)'
+              : ''
+          }`,
+        )}: ${colorUrl(`http://${source}${base}open-dingtalk`)}`);
+        if (enableChii) {
+          console.log(`  ${c.green('➜')}  ${c.bold(
+            'Click to open chrome devtools',
+          )}: ${colorUrl(`http://${source}${base}__chrome_devtools`)}`);
+        }
+      });
+
+      resovedInfo.targetURL = new URL(_targetUrl);
+      resovedInfo.targetURL.searchParams.append('ddtab', 'true');
+      if (options?.corpId) {
+        resovedInfo.targetURL.searchParams.append('corpId', options.corpId);
+      }
+    },
   };
-
-  const plugins = [] as UnpluginOptions[];
-
-  if (options?.enable && options?.vconsole?.enabled) {
-    plugins.push(viteVConsole(options?.vconsole) as UnpluginOptions);
-  }
 
   plugins.push(unpluginDing);
 

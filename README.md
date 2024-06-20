@@ -25,7 +25,11 @@ interface Options {
   targetUrl?: string
   corpId?: string
   debug?: boolean
-  /** @link https://github.com/vadxq/vite-plugin-vconsole#vitevconsole-options */
+  /**
+   * only support vite
+   *
+   * @link https://github.com/vadxq/vite-plugin-vconsole#vitevconsole-options
+   */
   vconsole?: viteVConsoleOptions
   /** 需要调试的 cookies， 避免无法调试 HttpOnly 的 cookie */
   debugCookies?: string[]
@@ -53,6 +57,32 @@ export default defineConfig({
     }),
   ],
 });
+```
+
+<br></details>
+
+<details>
+<summary>Vue CLI 5</summary><br>
+
+```js
+// vue.config.js
+const [setupMiddlewares, unpluginDingtalk] = require('unplugin-dingtalk/webpack').default({
+  enable: true,
+});
+
+/**
+ * @type {import('@vue/cli-service').ProjectOptions}
+ */
+module.exports = {
+  devServer: {
+    setupMiddlewares,
+  },
+  configureWebpack: {
+    plugins: [
+      unpluginDingtalk,
+    ],
+  },
+};
 ```
 
 <br></details>

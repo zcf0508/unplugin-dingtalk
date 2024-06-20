@@ -147,12 +147,14 @@
     "eslint": "^8.55.0",
     "esno": "^4.0.0",
     "fast-glob": "^3.3.2",
+    "node-fetch": "^3.3.2",
     "nodemon": "^3.0.2",
     "rimraf": "^5.0.5",
     "rollup": "^4.6.1",
     "tsup": "^8.0.1",
     "vite": "^5.0.4",
     "vitest": "^0.34.6",
-    "webpack": "^5.89.0"
+    "webpack": "^5.89.0",
+    "webpack-dev-server": "^5.0.4"
   }
 }
