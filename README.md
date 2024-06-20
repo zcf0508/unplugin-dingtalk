@@ -2,11 +2,11 @@
 
 [![NPM version](https://img.shields.io/npm/v/unplugin-dingtalk?color=a1b858&label=)](https://www.npmjs.com/package/unplugin-dingtalk)
 
-一键启动钉钉内调试。（目前仅支持 vite ）
+一键启动钉钉内调试。
 
 ## 功能
 - [x] 在钉钉内打开调试链接
-- [x] 可选注入 [vConsole](https://github.com/Tencent/vConsole) 用于调试
+- [x] 可选注入 [vConsole](https://github.com/Tencent/vConsole) 用于调试 （仅支持 vite ）
 - [x] 可选注入 [chii](https://github.com/liriliri/chii) 用于调试
 - [x] 可选打开 [vue-devtools](https://github.com/vuejs/devtools) 用于调试
 - [x] 支持调试 `HttpOnly` cookies
