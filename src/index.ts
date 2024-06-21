@@ -12,6 +12,8 @@ import { start } from 'chii';
 import { getRandomPort } from 'get-port-please';
 import type { Options, SetupMiddlewares } from './types';
 
+const cwd = process.cwd();
+
 let config: ResolvedConfig;
 
 const colorUrl = (url: string) => c.green(url.replace(/:(\d+)\//, (_, port) => `:${c.bold(port)}/`));
@@ -221,6 +223,45 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       resovedInfo.targetURL.searchParams.append('ddtab', 'true');
       if (options?.corpId) {
         resovedInfo.targetURL.searchParams.append('corpId', options.corpId);
+      }
+    },
+    async rspack(compiler) {
+      if (!options?.enable) {
+        return;
+      }
+
+      const devServerOptions = {
+        host: 'localhost',
+        port: 8080,
+        ...compiler.options.devServer,
+        ...(await (await import('@rsbuild/core'))?.loadConfig({
+          cwd,
+        }))?.content?.server,
+      };
+
+      const source = `${devServerOptions.host === '0.0.0.0'
+        ? '127.0.0.1'
+        : devServerOptions.host}:${devServerOptions.port}`;
+      const base = compiler.options.output.publicPath || '/';
+      const _targetUrl = options?.targetUrl ?? `http://${source}${base}`;
+
+      resovedInfo.targetURL = new URL(_targetUrl);
+      resovedInfo.targetURL.searchParams.append('ddtab', 'true');
+      if (options?.corpId) {
+        resovedInfo.targetURL.searchParams.append('corpId', options.corpId);
+      }
+
+      console.log(`  ${c.green('➜')}  ${c.bold(
+        `Open in dingtalk${
+          options?.vueDevtools?.enable
+            ? ' (with vue-devtools)'
+            : ''
+        }`,
+      )}: ${colorUrl(`http://${source}${base}open-dingtalk`)}`);
+      if (enableChii) {
+        console.log(`  ${c.green('➜')}  ${c.bold(
+          'Click to open chrome devtools',
+        )}: ${colorUrl(`http://${source}${base}__chrome_devtools`)}`);
       }
     },
   };

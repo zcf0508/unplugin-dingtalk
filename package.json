@@ -95,6 +95,7 @@
   "peerDependencies": {
     "@nuxt/kit": "^3",
     "@nuxt/schema": "^3",
+    "@rsbuild/core": "^0.7.9",
     "@vue/devtools": "^7.2.1",
     "esbuild": "*",
     "rollup": "^3",
@@ -107,6 +108,9 @@
       "optional": true
     },
     "@nuxt/schema": {
+      "optional": true
+    },
+    "@rsbuild/core": {
       "optional": true
     },
     "@vue/devtools": {

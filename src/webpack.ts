@@ -61,7 +61,7 @@ export default (options: Options) => {
 
     devServer.app!.get('/open-dingtalk', (req, res) => {
       const targetURL = resovedInfo.targetURL!;
-      console.debug(targetURL.toString());
+      debug(targetURL.toString());
       res.writeHead(302, {
         Location: `dingtalk://dingtalkclient/page/link?url=${encodeURIComponent(targetURL.toString())}`,
       });
