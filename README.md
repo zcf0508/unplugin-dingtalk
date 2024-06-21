@@ -86,3 +86,33 @@ module.exports = {
 ```
 
 <br></details>
+
+<details>
+<summary>Rsbuild</summary><br>
+
+```js
+// rsbuild.config.js
+import { defineConfig } from '@rsbuild/core';
+import createUnpluginDingtalk from 'unplugin-dingtalk/rspack';
+
+const [setupMiddlewares, unpluginDingtalk] = createUnpluginDingtalk({
+  enable: true,
+});
+
+export default defineConfig({
+  dev: {
+    setupMiddlewares: [
+      setupMiddlewares,
+    ],
+  },
+  tools: {
+    rspack: {
+      plugins: [
+        unpluginDingtalk,
+      ],
+    },
+  },
+});
+```
+
+<br></details>
