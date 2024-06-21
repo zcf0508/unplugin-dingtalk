@@ -6,7 +6,6 @@ import type { UnpluginFactory, UnpluginOptions } from 'unplugin';
 import { createUnplugin } from 'unplugin';
 import type { ResolvedConfig } from 'vite';
 import c from 'picocolors';
-import { viteVConsole } from 'vite-plugin-vconsole';
 import cookie from 'cookie';
 // @ts-expect-error missing types
 import { start } from 'chii';
@@ -50,11 +49,13 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
         });
       }
 
-      if (options?.enable && options?.vueDevtools?.enable) {
+      if (options?.enable) {
         const codes = [
-          `/* eslint-disable */;
-          import { devtools } from '@vue/devtools'
-          devtools.connect(${options?.vueDevtools?.host}, ${options?.vueDevtools?.port});`,
+          '/* eslint-disable */;',
+          options?.vueDevtools?.enable
+            ? `import { devtools } from '@vue/devtools'
+          devtools.connect(${options?.vueDevtools?.host}, ${options?.vueDevtools?.port});`
+            : '',
           options?.enable && enableChii
             ? `(() => { 
           const script = document.createElement('script'); 
@@ -62,7 +63,8 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
           document.body.appendChild(script); 
           })()`
             : '',
-          `/* eslint-enable */${_source};`,
+          '/* eslint-enable */',
+          `${_source};`,
         ];
 
         return {
