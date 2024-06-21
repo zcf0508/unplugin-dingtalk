@@ -34,8 +34,6 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
     }
   }
 
-  const plugins = [] as UnpluginOptions[];
-
   const unpluginDing: UnpluginOptions = {
     name: 'unplugin-dingtalk',
     enforce: 'pre',
@@ -47,6 +45,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
         resovedInfo.availablePort = await getRandomPort();
         debug(`chii server port: ${JSON.stringify({ availablePort: resovedInfo.availablePort })}`);
         start({
+          host: '0.0.0.0',
           port: resovedInfo.availablePort,
         });
       }
@@ -84,12 +83,6 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       async configureServer(server) {
         if (!options?.enable) {
           return;
-        }
-
-        const availablePort = resovedInfo.availablePort;
-
-        if (options?.enable && options?.vconsole?.enabled) {
-          plugins.push(viteVConsole(options?.vconsole) as UnpluginOptions);
         }
 
         const _printUrls = server.printUrls.bind(server);
@@ -146,10 +139,10 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
         if (enableChii) {
           server.middlewares.use('/__chrome_devtools', async (_req, res) => {
             try {
-              const raw = await fetch(`http://localhost:${availablePort}/targets`);
+              const raw = await fetch(`http://localhost:${resovedInfo.availablePort}/targets`);
               const data = await raw.json() as any;
               if (data?.targets.length > 0) {
-                const devToolsUrl = `http://localhost:${availablePort}/front_end/chii_app.html?ws=localhost:${availablePort}/client/${Math.random().toString(20).substring(2, 8)}?target=${data.targets[0].id}&rtc=false`;
+                const devToolsUrl = `http://localhost:${resovedInfo.availablePort}/front_end/chii_app.html?ws=localhost:${resovedInfo.availablePort}/client/${Math.random().toString(20).substring(2, 8)}?target=${data.targets[0].id}&rtc=false`;
 
                 res.writeHead(302, { Location: devToolsUrl });
                 res.end();
@@ -230,9 +223,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
     },
   };
 
-  plugins.push(unpluginDing);
-
-  return plugins;
+  return unpluginDing;
 };
 
 export const unplugin = /* #__PURE__ */ createUnplugin(unpluginFactory);
