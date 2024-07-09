@@ -4,16 +4,27 @@ import type { viteVConsoleOptions } from 'vite-plugin-vconsole';
 export interface Options {
   enable?: boolean
   targetUrl?: string
+  /** 是否启动dns服务器 */
+  dns?: {
+    host: string
+    ip: string
+  }
   corpId?: string
   debug?: boolean
   /** only support vite */
   vconsole?: viteVConsoleOptions
-  /** default `true` */
-  chii?: boolean
+  chii?: {
+    /** default true */
+    enable?: boolean
+    /** default 127.0.0.1 */
+    host: string
+  }
   debugCookies?: string[]
   vueDevtools?: {
     enable?: boolean
+    /** default 127.0.0.1 */
     host?: string
+    /** default 8098 */
     port?: number
   }
 }

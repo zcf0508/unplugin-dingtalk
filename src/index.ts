@@ -9,6 +9,7 @@ import c from 'picocolors';
 import cookie from 'cookie';
 // @ts-expect-error missing types
 import { start } from 'chii';
+import dns2 from 'dns2';
 import { getRandomPort } from 'get-port-please';
 import type { Options, SetupMiddlewares } from './types';
 
@@ -20,14 +21,96 @@ const colorUrl = (url: string) => c.green(url.replace(/:(\d+)\//, (_, port) => `
 
 export const resovedInfo = {
   devtoolsInstance: undefined as ChildProcess | undefined,
+  dnsServerInstence: undefined as ReturnType<typeof dns2.createServer> | undefined,
   availablePort: undefined as number | undefined,
   targetURL: undefined as undefined | URL,
 };
 
+export function startVueDevtools(enable?: boolean) {
+  if (enable && !resovedInfo.devtoolsInstance) {
+    resovedInfo.devtoolsInstance = exec('npx vue-devtools');
+
+    console.log(`  ${c.green('➜')}  vue-devtools is running. If the devtools has no data, please refresh the page in dingtalk.`);
+
+    resovedInfo.devtoolsInstance.on('exit', () => {
+      resovedInfo.devtoolsInstance = undefined;
+    });
+
+    process.on('exit', () => {
+      if (resovedInfo.devtoolsInstance) {
+        resovedInfo.devtoolsInstance.kill();
+      }
+    });
+  }
+}
+
+export function startDnsServer(options?: Options) {
+  function debug(...args: Parameters<typeof console.log>) {
+    if (options?.debug) {
+      console.log(`  ${c.yellow('DEBUG')}  `, ...args);
+    }
+  }
+
+  if (options?.enable && options?.dns && !resovedInfo.dnsServerInstence) {
+    const { Packet } = dns2;
+    resovedInfo.dnsServerInstence = dns2.createServer({
+      tcp: true,
+      udp: true,
+      handle: (request, send, rinfo) => {
+        const response = Packet.createResponseFromRequest(request);
+        const [question] = request.questions;
+        const { name } = question;
+        if (name === options.dns!.host) {
+          response.answers.push({
+            name,
+            type: Packet.TYPE.A,
+            class: Packet.CLASS.IN,
+            ttl: 300,
+            address: options.dns?.ip,
+          });
+
+          debug(`dns request from ${rinfo.address}:${rinfo.port} for ${name} => ${options.dns!.ip}`);
+        }
+        send(response);
+      },
+    });
+    resovedInfo.dnsServerInstence.listen({
+      udp: { address: '0.0.0.0', port: 53 },
+      tcp: { address: '0.0.0.0', port: 53 },
+    }).then(() => {
+      debug('DNS server is running.');
+
+      // eslint-disable-next-line new-cap
+      const dns = new dns2({
+        port: 53,
+        nameServers: ['127.0.0.1', '8.8.8.8'],
+      });
+
+      dns.resolveA(options.dns!.host).then((addresses) => {
+        if (addresses.answers[0]?.address === options.dns!.ip) {
+          startDnsServer(options);
+          console.log(`  ${c.green('➜')}  ${c.bold(`DNS server is started, please modify the DNS of the remote device to ${options.dns!.ip}`)}`);
+        }
+        else {
+          debug(addresses.answers[0].address);
+          throw new Error('DNS server started failed');
+        }
+      }).catch((e) => {
+        throw e;
+      });
+    }).catch((e) => {
+      debug(e);
+      console.log(`  ${c.red('➜')}  ${c.bold(e?.message || e)}`);
+    });
+  }
+}
+
 export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (options) => {
   const {
-    chii: enableChii = true,
+    chii,
   } = options || {};
+
+  const enableChii = chii?.enable !== false;
 
   function debug(...args: Parameters<typeof console.log>) {
     if (options?.debug) {
@@ -44,11 +127,10 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
     async transform(_source) {
       if (options?.enable && enableChii && !resovedInfo.availablePort) {
         resovedInfo.availablePort = await getRandomPort();
-        debug(`chii server port: ${JSON.stringify({ availablePort: resovedInfo.availablePort })}`);
         start({
-          host: '0.0.0.0',
           port: resovedInfo.availablePort,
         });
+        debug(`chii server port: ${resovedInfo.availablePort}`);
       }
 
       if (options?.enable) {
@@ -56,12 +138,20 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
           '/* eslint-disable */;',
           options?.vueDevtools?.enable
             ? `import { devtools } from '@vue/devtools'
-          devtools.connect(${options?.vueDevtools?.host}, ${options?.vueDevtools?.port});`
+          devtools.connect(${
+  options?.vueDevtools?.host
+    ? `"${options.vueDevtools.host}"`
+    : undefined
+}, ${
+  options?.vueDevtools?.port
+    ? `${options.vueDevtools.port}`
+    : undefined
+});`
             : '',
           options?.enable && enableChii
             ? `(() => { 
           const script = document.createElement('script'); 
-          script.src="http://localhost:${resovedInfo.availablePort}/target.js"; 
+          script.src="http://${chii?.host || '127.0.0.1'}:${resovedInfo.availablePort}/target.js"; 
           document.body.appendChild(script); 
           })()`
             : '',
@@ -96,6 +186,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
           const u = new URL(url);
           source = u.host;
         }
+
         const base = server.config.base || '/';
         const _targetUrl = options?.targetUrl ?? `http://${source}${base}`;
 
@@ -151,6 +242,10 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
                 res.writeHead(302, { Location: devToolsUrl });
                 res.end();
               }
+              else {
+                res.writeHead(404);
+                res.end();
+              }
             }
             catch (error) {
               debug(`${error}`);
@@ -166,24 +261,12 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
             Location: `dingtalk://dingtalkclient/page/link?url=${encodeURIComponent(targetURL.toString())}`,
           });
 
-          if (options?.vueDevtools?.enable && !resovedInfo.devtoolsInstance) {
-            resovedInfo.devtoolsInstance = exec('npx vue-devtools');
-
-            console.log(`  ${c.green('➜')}  vue-devtools is running. If the devtools has no data, please refresh the page in dingtalk.`);
-
-            resovedInfo.devtoolsInstance.on('exit', () => {
-              resovedInfo.devtoolsInstance = undefined;
-            });
-
-            process.on('exit', () => {
-              if (resovedInfo.devtoolsInstance) {
-                resovedInfo.devtoolsInstance.kill();
-              }
-            });
-          }
+          startVueDevtools(options?.vueDevtools?.enable);
 
           res.end();
         });
+
+        startDnsServer(options);
       },
     },
     webpack(compiler) {
@@ -224,6 +307,8 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       if (options?.corpId) {
         resovedInfo.targetURL.searchParams.append('corpId', options.corpId);
       }
+
+      startDnsServer(options);
     },
     async rspack(compiler) {
       if (!options?.enable) {
@@ -263,6 +348,8 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
           'Click to open chrome devtools',
         )}: ${colorUrl(`http://${source}${base}__chrome_devtools`)}`);
       }
+
+      startDnsServer(options);
     },
   };
 

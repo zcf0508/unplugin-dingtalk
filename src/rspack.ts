@@ -1,11 +1,9 @@
-import { exec } from 'node:child_process';
-import process from 'node:process';
 import { createRspackPlugin } from 'unplugin';
 import cookie from 'cookie';
 import c from 'picocolors';
 import fetch from 'node-fetch';
 import type { Options, RspackSetupMiddlewares } from './types';
-import { resovedInfo, unpluginFactory } from '.';
+import { resovedInfo, startVueDevtools, unpluginFactory } from '.';
 
 export default (options: Options) => {
   function debug(...args: Parameters<typeof console.log>) {
@@ -15,8 +13,10 @@ export default (options: Options) => {
   }
 
   const {
-    chii: enableChii = true,
+    chii,
   } = options || {};
+
+  const enableChii = chii?.enable !== false;
 
   const injectSetupMiddlewares: RspackSetupMiddlewares = (middlewares, _devServer) => {
     if (options.debugCookies && options.debugCookies.length > 0) {
@@ -53,6 +53,10 @@ export default (options: Options) => {
             res.writeHead(302, { Location: devToolsUrl });
             res.end();
           }
+          else {
+            res.writeHead(404);
+            res.end();
+          }
         }
         catch (error) {
           debug(`${error}`);
@@ -72,21 +76,7 @@ export default (options: Options) => {
         Location: `dingtalk://dingtalkclient/page/link?url=${encodeURIComponent(targetURL.toString())}`,
       });
 
-      if (options?.vueDevtools?.enable && !resovedInfo.devtoolsInstance) {
-        resovedInfo.devtoolsInstance = exec('npx vue-devtools');
-
-        console.log(`  ${c.green('➜')}  vue-devtools is running. If the devtools has no data, please refresh the page in dingtalk.`);
-
-        resovedInfo.devtoolsInstance!.on('exit', () => {
-          resovedInfo.devtoolsInstance = undefined;
-        });
-
-        process.on('exit', () => {
-          if (resovedInfo.devtoolsInstance) {
-            resovedInfo.devtoolsInstance.kill();
-          }
-        });
-      }
+      startVueDevtools(options?.vueDevtools?.enable);
 
       res.end();
     });

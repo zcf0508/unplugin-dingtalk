@@ -1,7 +1,7 @@
 {
   "name": "unplugin-dingtalk",
   "type": "module",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "",
   "license": "MIT",
   "homepage": "https://github.com/zcf0508/unplugin-dingtalk#readme",
@@ -136,6 +136,7 @@
     "@antfu/eslint-config": "^2.18.1",
     "chii": "^1.10.0",
     "cookie": "^0.6.0",
+    "dns2": "^2.1.0",
     "eslint-plugin-security": "^3.0.0",
     "get-port-please": "^3.1.2",
     "picocolors": "^1.0.1",
@@ -145,6 +146,7 @@
   "devDependencies": {
     "@nuxt/kit": "^3.8.2",
     "@nuxt/schema": "^3.8.2",
+    "@types/dns2": "^2.0.9",
     "@types/node": "^20.10.3",
     "bumpp": "^9.2.0",
     "chalk": "^5.3.0",
@@ -157,7 +159,7 @@
     "rollup": "^4.6.1",
     "tsup": "^8.0.1",
     "vite": "^5.0.4",
-    "vitest": "^0.34.6",
+    "vitest": "^1.6.0",
     "webpack": "^5.89.0",
     "webpack-dev-server": "^5.0.4"
   }
