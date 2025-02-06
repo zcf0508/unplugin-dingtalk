@@ -8,7 +8,7 @@ import type { ResolvedConfig } from 'vite';
 import c from 'picocolors';
 import cookie from 'cookie';
 // @ts-expect-error missing types
-import { start } from 'chii';
+import { start } from 'z-chii';
 import dns2 from 'dns2';
 import { getRandomPort } from 'get-port-please';
 import type { Options, SetupMiddlewares } from './types';
