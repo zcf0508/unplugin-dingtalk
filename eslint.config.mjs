@@ -6,6 +6,11 @@ export default antfu({
 }, [
   pluginSecurity.configs.recommended,
   {
+    ignores: [
+      'playground',
+    ],
+  },
+  {
     rules: {
       'curly': ['error', 'all'],
       'style/brace-style': 'error',
