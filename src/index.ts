@@ -233,7 +233,12 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
 
             // 遍历 cookies 对象，并将每个 cookie 添加到 res 的 setCookie 中
             for (const [name, value] of Object.entries(cookies)) {
-              if (options.debugCookies && options.debugCookies.length > 0 && options.debugCookies.includes(name)) {
+              if (
+                value
+                && options.debugCookies
+                && options.debugCookies.length > 0
+                && options.debugCookies.includes(name)
+              ) {
                 const serializedCookie = cookie.serialize(name, value, {
                   httpOnly: false,
                 });

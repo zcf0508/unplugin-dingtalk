@@ -18,8 +18,8 @@ importers:
         specifier: ^7.2.1
         version: 7.2.1(vite@5.2.11(@types/node@20.12.12)(terser@5.31.0))(vue@3.5.13(typescript@5.7.3))
       cookie:
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^1.0.2
+        version: 1.0.2
       dns2:
         specifier: ^2.1.0
         version: 2.1.0
@@ -2046,6 +2046,10 @@ packages:
   cookie@0.6.0:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
     engines: {node: '>= 0.6'}
+
+  cookie@1.0.2:
+    resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
+    engines: {node: '>=18'}
 
   cookies@0.9.1:
     resolution: {integrity: sha512-TG2hpqe4ELx54QER/S3HQ9SRVnQnGBtKUz5bLQWtYAQ+o6GpgMs6sYUvaiJjVxb+UXwhRhAEP3m7LbsIZ77Hmw==}
@@ -6870,6 +6874,8 @@ snapshots:
   cookie@0.4.2: {}
 
   cookie@0.6.0: {}
+
+  cookie@1.0.2: {}
 
   cookies@0.9.1:
     dependencies:
