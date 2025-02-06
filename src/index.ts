@@ -180,7 +180,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
 <script>
   (() => { 
     const script = document.createElement('script'); 
-    script.src="./__chii_proxy/target.js"; 
+    script.src="/__chii_proxy/target.js"; 
     document.body.appendChild(script); 
   })()
 </script>
