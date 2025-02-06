@@ -1,17 +1,22 @@
 import type { ChildProcess } from 'node:child_process';
 import { exec } from 'node:child_process';
 import process from 'node:process';
+import type { Buffer } from 'node:buffer';
+import type { IncomingMessage } from 'node:http';
+import { ServerResponse } from 'node:http';
+import { Socket } from 'node:net';
 import fetch from 'node-fetch';
 import type { UnpluginFactory, UnpluginOptions } from 'unplugin';
 import { createUnplugin } from 'unplugin';
-import type { ResolvedConfig } from 'vite';
+import type { Connect, ResolvedConfig } from 'vite';
 import c from 'picocolors';
 import cookie from 'cookie';
 // @ts-expect-error missing types
 import { start } from 'z-chii';
 import dns2 from 'dns2';
 import { getRandomPort } from 'get-port-please';
-import type { Options, SetupMiddlewares } from './types';
+import httpProxy from 'http-proxy';
+import type { Options } from './types';
 
 const cwd = process.cwd();
 
@@ -148,13 +153,6 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
     : undefined
 });`
             : '',
-          options?.enable && enableChii
-            ? `(() => { 
-          const script = document.createElement('script'); 
-          script.src="http://${chii?.host || '127.0.0.1'}:${resovedInfo.availablePort}/target.js"; 
-          document.body.appendChild(script); 
-          })()`
-            : '',
           '/* eslint-enable */',
           `${_source};`,
         ];
@@ -173,6 +171,22 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
     vite: {
       configResolved(_config) {
         config = _config;
+      },
+      transformIndexHtml(html: string) {
+        if (enableChii) {
+          return html.replace(
+            '</body>',
+            `</body>
+<script>
+  (() => { 
+    const script = document.createElement('script'); 
+    script.src="./__chii_proxy/target.js"; 
+    document.body.appendChild(script); 
+  })()
+</script>
+`,
+          );
+        }
       },
       async configureServer(server) {
         if (!options?.enable) {
@@ -253,6 +267,61 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
               res.end();
             }
           });
+
+          // Proxy for Chii
+          function createProxyMiddleware() { // No longer takes resovedInfo as an argument
+            let proxy: httpProxy | null = null; // Store the proxy instance
+
+            const handleUpgrade = (req: IncomingMessage, socket: Socket, head: Buffer) => {
+              if (proxy && req.url?.startsWith('/__chii_proxy')) {
+                debug('WS upgrade:', req.url);
+                req.url = req.url.replace('/__chii_proxy', '');
+                proxy.ws(req, socket, head);
+              }
+            };
+
+            return (resolvedInfo: { availablePort?: number }): Connect.NextHandleFunction => {
+              return (req, res, next) => {
+                if (!proxy && resolvedInfo.availablePort) { // Create the proxy ONLY when needed, and only once.
+                  proxy = httpProxy.createProxyServer({
+                    target: `http://localhost:${resolvedInfo.availablePort}`,
+                    ws: true,
+                    // changeOrigin: true, // Consider if you need this
+                  });
+
+                  proxy.on('error', (err, req, res) => {
+                    console.error('Proxy error:', err);
+
+                    if (res instanceof ServerResponse) {
+                      if (!res.headersSent) {
+                        res.writeHead(500, { 'Content-Type': 'text/plain' });
+                      }
+                      res.end(`Proxy error: ${err.message}`);
+                    }
+                    else if (res instanceof Socket) {
+                      res.destroy();
+                    }
+                  });
+
+                  if ((req.socket as any).server) {
+                    (req.socket as any).server.on('upgrade', handleUpgrade);
+                  }
+                }
+
+                if (proxy && req.url?.startsWith('/__chii_proxy')) {
+                  debug(req.url);
+                  req.url = req.url.replace('/__chii_proxy', '');
+                  proxy.web(req, res);
+                }
+                else {
+                  next();
+                }
+              };
+            };
+          }
+
+          const proxyMiddleware = createProxyMiddleware();
+          server.middlewares.use(proxyMiddleware(resovedInfo));
         }
 
         server.middlewares.use('/open-dingtalk', (req, res) => {
