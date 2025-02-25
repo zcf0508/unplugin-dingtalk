@@ -1,7 +1,7 @@
 {
   "name": "unplugin-dingtalk",
   "type": "module",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "",
   "license": "MIT",
   "homepage": "https://github.com/zcf0508/unplugin-dingtalk#readme",
@@ -142,7 +142,7 @@
     "picocolors": "^1.0.1",
     "unplugin": "^1.5.1",
     "vite-plugin-vconsole": "^2.1.1",
-    "z-chii": "1.15.5-beta.1"
+    "z-chii": "file:~/Desktop/zcf0508/chii"
   },
   "devDependencies": {
     "@nuxt/kit": "^3.8.2",
