@@ -173,7 +173,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
         config = _config;
       },
       transformIndexHtml(html: string) {
-        if (enableChii) {
+        if (options?.enable && enableChii) {
           return html.replace(
             '</body>',
             `</body>
