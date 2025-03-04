@@ -20,13 +20,6 @@ export interface Options {
     host: string
   }
   debugCookies?: string[]
-  vueDevtools?: {
-    enable?: boolean
-    /** default 127.0.0.1 */
-    host?: string
-    /** default 8098 */
-    port?: number
-  }
 }
 
 export type SetupMiddlewares = (middlewares: import('webpack-dev-server').Middleware[], devServer: import('webpack-dev-server')) => import('webpack-dev-server').Middleware[];

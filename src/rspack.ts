@@ -3,7 +3,7 @@ import cookie from 'cookie';
 import c from 'picocolors';
 import fetch from 'node-fetch';
 import type { Options, RspackSetupMiddlewares } from './types';
-import { resovedInfo, startVueDevtools, unpluginFactory } from '.';
+import { resovedInfo, unpluginFactory } from '.';
 
 export default (options: Options) => {
   function debug(...args: Parameters<typeof console.log>) {
@@ -80,8 +80,6 @@ export default (options: Options) => {
       res.writeHead(302, {
         Location: `dingtalk://dingtalkclient/page/link?url=${encodeURIComponent(targetURL.toString())}`,
       });
-
-      startVueDevtools(options?.vueDevtools?.enable);
 
       res.end();
     });

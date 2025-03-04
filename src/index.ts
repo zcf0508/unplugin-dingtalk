@@ -25,29 +25,10 @@ let config: ResolvedConfig;
 const colorUrl = (url: string) => c.green(url.replace(/:(\d+)\//, (_, port) => `:${c.bold(port)}/`));
 
 export const resovedInfo = {
-  devtoolsInstance: undefined as ChildProcess | undefined,
   dnsServerInstence: undefined as ReturnType<typeof dns2.createServer> | undefined,
   availablePort: undefined as number | undefined,
   targetURL: undefined as undefined | URL,
 };
-
-export function startVueDevtools(enable?: boolean) {
-  if (enable && !resovedInfo.devtoolsInstance) {
-    resovedInfo.devtoolsInstance = exec('npx vue-devtools');
-
-    console.log(`  ${c.green('➜')}  vue-devtools is running. If the devtools has no data, please refresh the page in dingtalk.`);
-
-    resovedInfo.devtoolsInstance.on('exit', () => {
-      resovedInfo.devtoolsInstance = undefined;
-    });
-
-    process.on('exit', () => {
-      if (resovedInfo.devtoolsInstance) {
-        resovedInfo.devtoolsInstance.kill();
-      }
-    });
-  }
-}
 
 export function startDnsServer(options?: Options) {
   function debug(...args: Parameters<typeof console.log>) {
@@ -138,31 +119,6 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
         debug(`chii server port: ${resovedInfo.availablePort}`);
       }
 
-      if (options?.enable) {
-        const codes = [
-          '/* eslint-disable */;',
-          options?.vueDevtools?.enable
-            ? `import { devtools } from '@vue/devtools'
-          devtools.connect(${
-  options?.vueDevtools?.host
-    ? `"${options.vueDevtools.host}"`
-    : undefined
-}, ${
-  options?.vueDevtools?.port
-    ? `${options.vueDevtools.port}`
-    : undefined
-});`
-            : '',
-          '/* eslint-enable */',
-          `${_source};`,
-        ];
-
-        return {
-          code: codes.join('\n'),
-          map: null, // support source map
-        };
-      }
-
       return {
         code: _source,
         map: null, // support source map
@@ -207,11 +163,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
         server.printUrls = () => {
           _printUrls();
           console.log(`  ${c.green('➜')}  ${c.bold(
-            `Open in dingtalk${
-              options?.vueDevtools?.enable
-                ? ' (with vue-devtools)'
-                : ''
-            }`,
+            'Open in dingtalk',
           )}: ${colorUrl(`http://${source}${base}open-dingtalk`)}`);
           if (enableChii) {
             console.log(`  ${c.green('➜')}  ${c.bold(
@@ -335,8 +287,6 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
             Location: `dingtalk://dingtalkclient/page/link?url=${encodeURIComponent(targetURL.toString())}`,
           });
 
-          startVueDevtools(options?.vueDevtools?.enable);
-
           res.end();
         });
 
@@ -363,11 +313,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
 
       compiler.hooks.done.tap('unplugin-dingtalk', () => {
         console.log(`  ${c.green('➜')}  ${c.bold(
-          `Open in dingtalk${
-            options?.vueDevtools?.enable
-              ? ' (with vue-devtools)'
-              : ''
-          }`,
+          'Open in dingtalk',
         )}: ${colorUrl(`http://${source}${base}open-dingtalk`)}`);
         if (enableChii) {
           console.log(`  ${c.green('➜')}  ${c.bold(
@@ -411,11 +357,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       }
 
       console.log(`  ${c.green('➜')}  ${c.bold(
-        `Open in dingtalk${
-          options?.vueDevtools?.enable
-            ? ' (with vue-devtools)'
-            : ''
-        }`,
+        'Open in dingtalk',
       )}: ${colorUrl(`http://${source}${base}open-dingtalk`)}`);
       if (enableChii) {
         console.log(`  ${c.green('➜')}  ${c.bold(
