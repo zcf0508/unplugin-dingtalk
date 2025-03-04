@@ -5,7 +5,6 @@ export default <Options>{
     'src/*.ts',
   ],
   clean: true,
-  format: ['cjs', 'esm'],
+  format: ['esm'],
   dts: true,
-  onSuccess: 'npm run build:fix',
 };
