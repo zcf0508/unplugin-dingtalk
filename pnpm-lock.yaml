@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@antfu/eslint-config':
-        specifier: ^2.18.1
-        version: 2.18.1(@vue/compiler-sfc@3.5.13)(eslint@8.57.0)(typescript@5.7.3)(vitest@1.6.0(@types/node@20.12.12)(terser@5.31.0))
       '@rsbuild/core':
         specifier: ^0.7.9
         version: 0.7.9
@@ -23,12 +20,6 @@ importers:
       esbuild:
         specifier: '*'
         version: 0.24.2
-      eslint-plugin-security:
-        specifier: ^3.0.0
-        version: 3.0.0
-      get-port-please:
-        specifier: ^3.1.2
-        version: 3.1.2
       http-proxy:
         specifier: ^1.18.1
         version: 1.18.1
@@ -48,6 +39,9 @@ importers:
         specifier: 1.15.5-beta.1
         version: 1.15.5-beta.1
     devDependencies:
+      '@antfu/eslint-config':
+        specifier: ^2.18.1
+        version: 2.18.1(@vue/compiler-sfc@3.5.13)(eslint@8.57.0)(typescript@5.7.3)(vitest@1.6.0(@types/node@20.12.12)(terser@5.31.0))
       '@nuxt/kit':
         specifier: ^3.8.2
         version: 3.11.2(rollup@4.34.4)
@@ -69,9 +63,15 @@ importers:
       eslint:
         specifier: ^8.55.0
         version: 8.57.0
+      eslint-plugin-security:
+        specifier: ^3.0.0
+        version: 3.0.0
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.2
+      get-port-please:
+        specifier: ^3.1.2
+        version: 3.1.2
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2

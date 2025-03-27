@@ -92,11 +92,8 @@
     }
   },
   "dependencies": {
-    "@antfu/eslint-config": "^2.18.1",
     "cookie": "^1.0.2",
     "dns2": "^2.1.0",
-    "eslint-plugin-security": "^3.0.0",
-    "get-port-please": "^3.1.2",
     "http-proxy": "^1.18.1",
     "picocolors": "^1.0.1",
     "unplugin": "^1.5.1",
@@ -104,6 +101,7 @@
     "z-chii": "1.15.5-beta.1"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^2.18.1",
     "@nuxt/kit": "^3.8.2",
     "@nuxt/schema": "^3.8.2",
     "@types/dns2": "^2.0.9",
@@ -111,7 +109,9 @@
     "bumpp": "^9.2.0",
     "chalk": "^5.3.0",
     "eslint": "^8.55.0",
+    "eslint-plugin-security": "^3.0.0",
     "fast-glob": "^3.3.2",
+    "get-port-please": "^3.1.2",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.0.2",
     "rimraf": "^5.0.5",
