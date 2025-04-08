@@ -2,7 +2,7 @@
 
 [![NPM version](https://img.shields.io/npm/v/unplugin-dingtalk?color=a1b858&label=)](https://www.npmjs.com/package/unplugin-dingtalk)
 
-一键启动钉钉内调试。支持 `vite`、`vue-cli`、`rebuild`。
+一键启动钉钉内调试。支持 `vite`、`vue-cli`、`rsbuild`。
 
 ## 功能
 - [x] 在钉钉内打开调试链接
