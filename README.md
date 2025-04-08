@@ -8,7 +8,7 @@
 - [x] 在钉钉内打开调试链接
 - [x] 可选注入 [vConsole](https://github.com/Tencent/vConsole) 用于调试 （仅支持 vite ）
 - [x] 可选注入 [chii](https://github.com/liriliri/chii) 用于调试
-- [x] ~~可选打开 [vue-devtools](https://github.com/vuejs/devtools) 用于调试~~ 已移除
+- [x] ~~可选打开 [vue-devtools](https://github.com/vuejs/devtools) 用于调试~~ 已移除，如有需要请使用 [vue-devtools](https://devtools.vuejs.org/guide/standalone)
 - [x] 支持调试 `HttpOnly` cookies
 
 ![images](https://github.com/zcf0508/unplugin-dingtalk/raw/main/images/Snipaste_2024-05-22_11-25-35.png)
