@@ -61,8 +61,8 @@
     "@rsbuild/core": "^0.7.9",
     "esbuild": "*",
     "rollup": "^3",
-    "vconsole": "^3.15.1",
     "vite": ">=3",
+    "vite-plugin-vconsole": "^2.1.1",
     "webpack": "^4 || ^5"
   },
   "peerDependenciesMeta": {
@@ -81,10 +81,10 @@
     "rollup": {
       "optional": true
     },
-    "vconsole": {
+    "vite": {
       "optional": true
     },
-    "vite": {
+    "vite-plugin-vconsole": {
       "optional": true
     },
     "webpack": {
@@ -96,7 +96,6 @@
     "http-proxy": "^1.18.1",
     "picocolors": "^1.0.1",
     "unplugin": "^1.5.1",
-    "vite-plugin-vconsole": "^2.1.1",
     "z-chii": "1.15.5-beta.1"
   },
   "devDependencies": {
@@ -116,6 +115,7 @@
     "rollup": "^4.6.1",
     "tsup": "^8.0.1",
     "vite": "^5.0.4",
+    "vite-plugin-vconsole": "^2.1.1",
     "vitest": "^1.6.0",
     "webpack": "^5.89.0",
     "webpack-dev-server": "^5.0.4"
