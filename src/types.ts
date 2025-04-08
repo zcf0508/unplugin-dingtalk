@@ -4,11 +4,6 @@ import type { viteVConsoleOptions } from 'vite-plugin-vconsole';
 export interface Options {
   enable?: boolean
   targetUrl?: string
-  /** 是否启动dns服务器 */
-  dns?: {
-    host: string
-    ip: string
-  }
   corpId?: string
   debug?: boolean
   /** only support vite */

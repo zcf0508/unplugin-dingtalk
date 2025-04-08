@@ -1,5 +1,3 @@
-import type { ChildProcess } from 'node:child_process';
-import { exec } from 'node:child_process';
 import process from 'node:process';
 import type { Buffer } from 'node:buffer';
 import type { IncomingMessage } from 'node:http';
@@ -13,7 +11,6 @@ import c from 'picocolors';
 import cookie from 'cookie';
 // @ts-expect-error missing types
 import { start } from 'z-chii';
-import dns2 from 'dns2';
 import { getRandomPort } from 'get-port-please';
 import httpProxy from 'http-proxy';
 import type { Options } from './types';
@@ -25,71 +22,9 @@ let config: ResolvedConfig;
 const colorUrl = (url: string) => c.green(url.replace(/:(\d+)\//, (_, port) => `:${c.bold(port)}/`));
 
 export const resovedInfo = {
-  dnsServerInstence: undefined as ReturnType<typeof dns2.createServer> | undefined,
   availablePort: undefined as number | undefined,
   targetURL: undefined as undefined | URL,
 };
-
-export function startDnsServer(options?: Options) {
-  function debug(...args: Parameters<typeof console.log>) {
-    if (options?.debug) {
-      console.log(`  ${c.yellow('DEBUG')}  `, ...args);
-    }
-  }
-
-  if (options?.enable && options?.dns && !resovedInfo.dnsServerInstence) {
-    const { Packet } = dns2;
-    resovedInfo.dnsServerInstence = dns2.createServer({
-      tcp: true,
-      udp: true,
-      handle: (request, send, rinfo) => {
-        const response = Packet.createResponseFromRequest(request);
-        const [question] = request.questions;
-        const { name } = question;
-        if (name === options.dns!.host) {
-          response.answers.push({
-            name,
-            type: Packet.TYPE.A,
-            class: Packet.CLASS.IN,
-            ttl: 300,
-            address: options.dns?.ip,
-          });
-
-          debug(`dns request from ${rinfo.address}:${rinfo.port} for ${name} => ${options.dns!.ip}`);
-        }
-        send(response);
-      },
-    });
-    resovedInfo.dnsServerInstence.listen({
-      udp: { address: '0.0.0.0', port: 53 },
-      tcp: { address: '0.0.0.0', port: 53 },
-    }).then(() => {
-      debug('DNS server is running.');
-
-      // eslint-disable-next-line new-cap
-      const dns = new dns2({
-        port: 53,
-        nameServers: ['127.0.0.1', '8.8.8.8'],
-      });
-
-      dns.resolveA(options.dns!.host).then((addresses) => {
-        if (addresses.answers[0]?.address === options.dns!.ip) {
-          startDnsServer(options);
-          console.log(`  ${c.green('➜')}  ${c.bold(`DNS server is started, please modify the DNS of the remote device to ${options.dns!.ip}`)}`);
-        }
-        else {
-          debug(addresses.answers[0].address);
-          throw new Error('DNS server started failed');
-        }
-      }).catch((e) => {
-        throw e;
-      });
-    }).catch((e) => {
-      debug(e);
-      console.log(`  ${c.red('➜')}  ${c.bold(e?.message || e)}`);
-    });
-  }
-}
 
 export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (options) => {
   const {
@@ -289,8 +224,6 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
 
           res.end();
         });
-
-        startDnsServer(options);
       },
     },
     webpack(compiler) {
@@ -327,8 +260,6 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       if (options?.corpId) {
         resovedInfo.targetURL.searchParams.append('corpId', options.corpId);
       }
-
-      startDnsServer(options);
     },
     async rspack(compiler) {
       if (!options?.enable) {
@@ -364,8 +295,6 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
           'Click to open chrome devtools',
         )}: ${colorUrl(`http://${source}${base}__chrome_devtools`)}`);
       }
-
-      startDnsServer(options);
     },
   };
 
