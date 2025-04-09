@@ -72,6 +72,10 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
   (() => { 
     const script = document.createElement('script'); 
     script.src="/__chii_proxy/target.js"; 
+    ${options?.chii?.embedded
+    ? 'script.setAttribute("embedded", "true");'
+    : ''
+} 
     document.body.appendChild(script); 
   })()
 </script>

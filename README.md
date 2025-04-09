@@ -33,8 +33,15 @@ interface Options {
   vconsole?: viteVConsoleOptions
   /** 需要调试的 cookies， 避免无法调试 HttpOnly 的 cookie */
   debugCookies?: string[]
-  /** 默认值 `true` */
-  chii?: boolean
+  chii?: {
+    /** 默认值 `true` */
+    enable?: boolean
+    /**
+     * 默认值 `false`
+     * @link https://chii.liriliri.io/docs/#usage
+     */
+    embedded?: boolean
+  }
 }
 ```
 

@@ -11,8 +11,11 @@ export interface Options {
   chii?: {
     /** default true */
     enable?: boolean
-    /** default 127.0.0.1 */
-    host: string
+    /**
+     * default false
+     * @link [chii embedded](https://chii.liriliri.io/docs/#usage)
+     */
+    embedded?: boolean
   }
   debugCookies?: string[]
 }
