@@ -1,8 +1,8 @@
 import { createWebpackPlugin } from 'unplugin';
 import cookie from 'cookie';
 import c from 'picocolors';
-import fetch from 'node-fetch';
 import type { Options, SetupMiddlewares } from './types';
+import { getChromeDevtoolsHtml } from './__chrome_devtools';
 import { resovedInfo, unpluginFactory } from '.';
 
 export default (options: Options) => {
@@ -45,20 +45,10 @@ export default (options: Options) => {
 
     if (enableChii) {
       devServer.app!.get('/__chrome_devtools', async (_req, res) => {
-        const availablePort = resovedInfo.availablePort!;
         try {
-          const raw = await fetch(`http://localhost:${availablePort}/targets`);
-          const data = await raw.json() as any;
-          if (data?.targets.length > 0) {
-            const devToolsUrl = `http://localhost:${availablePort}/front_end/chii_app.html?ws=localhost:${availablePort}/client/${Math.random().toString(20).substring(2, 8)}?target=${data.targets[0].id}&rtc=false`;
-
-            res.writeHead(302, { Location: devToolsUrl });
-            res.end();
-          }
-          else {
-            res.writeHead(404);
-            res.end();
-          }
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!));
+          res.end();
         }
         catch (error) {
           debug(`${error}`);

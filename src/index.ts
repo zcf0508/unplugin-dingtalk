@@ -3,7 +3,6 @@ import type { Buffer } from 'node:buffer';
 import type { IncomingMessage } from 'node:http';
 import { ServerResponse } from 'node:http';
 import { Socket } from 'node:net';
-import fetch from 'node-fetch';
 import type { UnpluginFactory, UnpluginOptions } from 'unplugin';
 import { createUnplugin } from 'unplugin';
 import type { Connect, ResolvedConfig } from 'vite';
@@ -14,6 +13,7 @@ import { start } from 'z-chii';
 import { getRandomPort } from 'get-port-please';
 import httpProxy from 'http-proxy';
 import type { Options } from './types';
+import { getChromeDevtoolsHtml } from './__chrome_devtools';
 
 const cwd = process.cwd();
 
@@ -143,25 +143,9 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
 
         if (enableChii) {
           server.middlewares.use('/__chrome_devtools', async (_req, res) => {
-            try {
-              const raw = await fetch(`http://localhost:${resovedInfo.availablePort}/targets`);
-              const data = await raw.json() as any;
-              if (data?.targets.length > 0) {
-                const devToolsUrl = `http://localhost:${resovedInfo.availablePort}/front_end/chii_app.html?ws=localhost:${resovedInfo.availablePort}/client/${Math.random().toString(20).substring(2, 8)}?target=${data.targets[0].id}&rtc=false`;
-
-                res.writeHead(302, { Location: devToolsUrl });
-                res.end();
-              }
-              else {
-                res.writeHead(404);
-                res.end();
-              }
-            }
-            catch (error) {
-              debug(`${error}`);
-              res.writeHead(502);
-              res.end();
-            }
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!));
+            res.end();
           });
 
           // Proxy for Chii

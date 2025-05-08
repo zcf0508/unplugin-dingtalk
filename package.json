@@ -109,7 +109,6 @@
     "eslint-plugin-security": "^3.0.0",
     "fast-glob": "^3.3.2",
     "get-port-please": "^3.1.2",
-    "node-fetch": "^3.3.2",
     "nodemon": "^3.0.2",
     "rimraf": "^5.0.5",
     "rollup": "^4.6.1",
