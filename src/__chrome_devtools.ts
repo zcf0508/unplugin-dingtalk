@@ -75,9 +75,9 @@ export function getChromeDevtoolsHtml(targetPort: number) {
         list.innerHTML = "<li>获取调试目标失败</li>";
       }
     }
-    document.getElementById("refresh").onclick = fetchTargets;
+    document.getElementById("refresh").onclick = () => window.location.reload();
     window.onload = fetchTargets;
-    document.addEventListener('visibilitychange', fetchTargets);
+    document.addEventListener('visibilitychange', window.location.reload);
   </script>
 </body>
 

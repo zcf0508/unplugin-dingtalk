@@ -175,6 +175,12 @@ if (import.meta.hot) {
 
         if (enableChii) {
           server.middlewares.use('/__chrome_devtools', async (_req, res) => {
+            if (!resovedInfo.availablePort) {
+              res.writeHead(500, { 'Content-Type': 'text/plain' });
+              res.end('Server not started');
+              return;
+            }
+
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!));
             res.end();
