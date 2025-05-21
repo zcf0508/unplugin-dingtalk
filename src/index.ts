@@ -42,22 +42,62 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
   const unpluginDing: UnpluginOptions = {
     name: 'unplugin-dingtalk',
     enforce: 'pre',
-    transformInclude(id) {
-      return (id.endsWith('main.ts') || id.endsWith('main.js')) && !id.includes('node_modules');
+    resolveId(source) {
+      if (source === 'virtual:chii-client') {
+        return source;
+      }
     },
-    async transform(_source) {
+    load(id) {
+      if (id === 'virtual:chii-client') {
+        return `
+;(function(){
+  if (document.getElementById('__chii_client')) return;
+  const script = document.createElement('script');
+  script.id = '__chii_client';
+  script.src="/__chii_proxy/target.js";
+  ${options?.chii?.embedded
+    ? 'script.setAttribute(\'embedded\',\'true\');'
+    : ''}
+  document.body.appendChild(script);
+})();
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    const old = document.getElementById('__chii_client');
+    if (old) old.remove();
+    const script = document.createElement('script');
+    script.id = '__chii_client';
+    script.src="/__chii_proxy/target.js";
+    ${options?.chii?.embedded
+    ? 'script.setAttribute(\'embedded\',\'true\');'
+    : ''}
+    document.body.appendChild(script);
+  });
+}
+        `;
+      }
+    },
+    async transform(source: string, id: string) {
+      // initialize server once
       if (options?.enable && enableChii && !resovedInfo.availablePort) {
         resovedInfo.availablePort = await getRandomPort();
-        start({
-          port: resovedInfo.availablePort,
-        });
+        start({ port: resovedInfo.availablePort });
         debug(`chii server port: ${resovedInfo.availablePort}`);
       }
-
-      return {
-        code: _source,
-        map: null, // support source map
-      };
+      // inject client script at first user code module
+      if (options?.enable && enableChii) {
+        const file = id.split('?')[0];
+        if (
+          file.startsWith(config.root)
+          && !file.includes('node_modules')
+          && file.match(/\.[t|j]s$/)
+        ) {
+          return {
+            code: `import 'virtual:chii-client';\n${source}`,
+            map: null,
+          };
+        }
+      }
+      return { code: source, map: null };
     },
     vite: {
       configResolved(_config) {
@@ -65,23 +105,15 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       },
       transformIndexHtml(html: string) {
         if (options?.enable && enableChii) {
-          return html.replace(
-            '</body>',
-            `</body>
-<script>
-  (() => { 
-    const script = document.createElement('script'); 
-    script.src="/__chii_proxy/target.js"; 
-    ${options?.chii?.embedded
-    ? 'script.setAttribute("embedded", "true");'
-    : ''
-} 
-    document.body.appendChild(script); 
-  })()
-</script>
-`,
-          );
+          const tag = '<script type="module">import \'virtual:chii-client\';</script>';
+          if (!html.includes(tag)) {
+            return html.replace(
+              '</body>',
+              `</body>${tag}\n`,
+            );
+          }
         }
+        return html;
       },
       async configureServer(server) {
         if (!options?.enable) {
