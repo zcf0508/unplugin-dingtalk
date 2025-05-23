@@ -3,7 +3,7 @@ import cookie from 'cookie';
 import c from 'picocolors';
 import type { Options, SetupMiddlewares } from './types';
 import { getChromeDevtoolsHtml } from './__chrome_devtools';
-import { resovedInfo, unpluginFactory } from '.';
+import { createProxyMiddleware, resovedInfo, unpluginFactory } from '.';
 
 export default (options: Options) => {
   function debug(...args: Parameters<typeof console.log>) {
@@ -19,6 +19,10 @@ export default (options: Options) => {
   const enableChii = chii?.enable !== false;
 
   const injectSetupMiddlewares: SetupMiddlewares = (middlewares, devServer) => {
+    if (!options?.enable) {
+      return middlewares;
+    }
+
     if (options.debugCookies && options.debugCookies.length > 0) {
       devServer.app!.use((req, res, next) => {
       // 获取 cookies
@@ -56,6 +60,9 @@ export default (options: Options) => {
           res.end();
         }
       });
+
+      const proxyMiddleware = createProxyMiddleware(debug);
+      devServer.app!.use(proxyMiddleware(resovedInfo));
     }
 
     devServer.app!.get('/open-dingtalk', (req, res) => {

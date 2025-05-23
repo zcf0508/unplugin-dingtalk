@@ -3,7 +3,7 @@ import cookie from 'cookie';
 import c from 'picocolors';
 import type { Options, RspackSetupMiddlewares } from './types';
 import { getChromeDevtoolsHtml } from './__chrome_devtools';
-import { resovedInfo, unpluginFactory } from '.';
+import { createProxyMiddleware, resovedInfo, unpluginFactory } from '.';
 
 export default (options: Options) => {
   function debug(...args: Parameters<typeof console.log>) {
@@ -19,6 +19,10 @@ export default (options: Options) => {
   const enableChii = chii?.enable !== false;
 
   const injectSetupMiddlewares: RspackSetupMiddlewares = (middlewares, _devServer) => {
+    if (!options?.enable) {
+      return middlewares;
+    }
+
     if (options.debugCookies && options.debugCookies.length > 0) {
       middlewares.unshift((req, res, next) => {
         // 获取 cookies
@@ -59,6 +63,9 @@ export default (options: Options) => {
           res.end();
         }
       });
+
+      const proxyMiddleware = createProxyMiddleware(debug);
+      middlewares.unshift(proxyMiddleware(resovedInfo));
     }
 
     middlewares.unshift((req, res, next) => {
