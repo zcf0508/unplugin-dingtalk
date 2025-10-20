@@ -82,9 +82,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch src",
-    "build:fix": "esno scripts/postbuild.ts",
+    "build": "tsdown",
     "lint": "eslint .",
     "play": "npm -C playground/vite run dev",
     "prepublishOnly": "npm run build",
@@ -152,12 +150,18 @@
     "nodemon": "^3.0.2",
     "proper-lockfile": "^4.1.2",
     "rimraf": "^5.0.5",
+    "rolldown": "1.0.0-beta.34",
     "rollup": "^4.6.1",
-    "tsup": "^8.0.1",
+    "tsdown": "0.14.2",
     "vite": "^5.0.4",
     "vite-plugin-vconsole": "^2.1.1",
     "vitest": "^1.6.0",
     "webpack": "^5.89.0",
     "webpack-dev-server": "^5.0.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "rolldown": "1.0.0-beta.34"
+    }
   }
 }
