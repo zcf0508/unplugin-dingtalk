@@ -3,11 +3,10 @@ import type { IncomingMessage } from 'node:http';
 import type { Socket } from 'node:net';
 import type { Options } from './types';
 import { addDevServerHandler, addServerPlugin, addVitePlugin, addWebpackPlugin, createResolver, defineNuxtModule } from '@nuxt/kit';
-import { defineEventHandler, proxyRequest } from 'h3';
 import httpProxy from 'http-proxy';
 import c from 'picocolors';
 import { resovedInfo } from '.';
-import { colorUrl } from './utils';
+import { colorUrl, interopDefault } from './utils';
 import vite from './vite';
 import webpack from './webpack';
 import '@nuxt/schema';
@@ -30,6 +29,8 @@ export default defineNuxtModule<ModuleOptions>({
     if (!options.enable) {
       return;
     }
+
+    const { defineEventHandler, proxyRequest } = await interopDefault(await import('h3'));
 
     function debug(...args: Parameters<typeof console.log>) {
       if (options?.debug) {
@@ -131,13 +132,11 @@ export default defineNuxtModule<ModuleOptions>({
       const url = listener.url;
       const source = new URL(url).host;
 
-      const base = _nuxt.options.app.baseURL || '/';
-
       if (enableChii) {
         console.log(
           `  ${c.green('➜')}  ${c.bold(
             'Click to open chrome devtools',
-          )}: ${colorUrl(`http://${source}${base}__chrome_devtools`)}`,
+          )}: ${colorUrl(`http://${source.replace('0.0.0.0', 'localhost')}/__chrome_devtools`)}`,
         );
       }
     });

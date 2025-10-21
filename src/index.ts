@@ -82,6 +82,9 @@ export function createProxyMiddleware(debug: typeof console.debug) {
   };
 }
 
+// 判断是否是 nuxt 环境
+const isNuxt = isNuxtProject();
+
 export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (options) => {
   const {
     chii,
@@ -152,6 +155,7 @@ if (import.meta.hot) {
           file.startsWith(config?.root || cwd)
           && !file.includes('node_modules')
           && file.match(/\.[t|j]s$/)
+          && !isNuxt
         ) {
           return {
             code: `import 'chii-client';\n${source}`,
@@ -166,7 +170,7 @@ if (import.meta.hot) {
         config = _config;
       },
       transformIndexHtml(html: string) {
-        if (options?.enable && enableChii) {
+        if (options?.enable && enableChii && !isNuxt) {
           const tag = '<script type="module">import \'chii-client\';</script>';
           if (!html.includes(tag)) {
             return html.replace(
@@ -248,10 +252,6 @@ if (import.meta.hot) {
             res.end();
           });
 
-          // 判断是否是 nuxt 环境
-          const isNuxt = isNuxtProject();
-
-          console.log('isNuxt', isNuxt);
           if (!isNuxt) {
             const proxyMiddleware = createProxyMiddleware(debug);
             server.middlewares.use(proxyMiddleware(resovedInfo));

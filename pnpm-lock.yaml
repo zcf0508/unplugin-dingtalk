@@ -23,6 +23,9 @@ importers:
       esbuild:
         specifier: '*'
         version: 0.25.4
+      h3:
+        specifier: ^1.15.4
+        version: 1.15.4
       http-proxy:
         specifier: ^1.18.1
         version: 1.18.1
@@ -33,8 +36,8 @@ importers:
         specifier: 2.2.0
         version: 2.2.0
       z-chii:
-        specifier: 1.15.5-beta.1
-        version: 1.15.5-beta.1
+        specifier: 1.15.5-beta.5
+        version: 1.15.5-beta.5
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^6.0.0
@@ -72,9 +75,6 @@ importers:
       get-port-please:
         specifier: ^3.1.2
         version: 3.1.2
-      h3:
-        specifier: ^1.15.4
-        version: 1.15.4
       nodemon:
         specifier: ^3.0.2
         version: 3.1.0
@@ -2500,6 +2500,9 @@ packages:
     resolution: {integrity: sha512-HqZ5rWlFjGiV0tDm3UxxgNRqsOTniqoKZu0pIAfh7TZQMGuZK+hH0drySty0si0QXj1ieop4+SkSfPZBPPkHig==}
     engines: {node: '>=14'}
 
+  any-promise@1.3.0:
+    resolution: {integrity: sha512-7UvmKalWRt1wgjL1RrGxoSJW/0QZFIegpeGvZG9kjp8vrRu55XTHbwnqq2GpXm9uLbcuhxm3IqX9OB4MZR1b2A==}
+
   anymatch@3.1.3:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
@@ -3004,6 +3007,14 @@ packages:
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+
+  debug@3.2.7:
+    resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
     peerDependencies:
       supports-color: '*'
     peerDependenciesMeta:
@@ -4259,9 +4270,9 @@ packages:
     engines: {node: '>= 18'}
     deprecated: 'Please use @koa/router instead, starting from v9! '
 
-  koa-send@5.0.1:
-    resolution: {integrity: sha512-tmcyQ/wXXuxpDxyNXv5yNNkdAMdFRqwtegBXUaowiQzUKqJehttS0x2j0eOZDQAyloAth5w6wwBImnFzkUz3pQ==}
-    engines: {node: '>= 8'}
+  koa-send@5.0.0:
+    resolution: {integrity: sha512-90ZotV7t0p3uN9sRwW2D484rAaKIsD8tAVtypw/aBU+ryfV+fR2xrcAwhI8Wl6WRkojLUs/cB9SBSCuIb+IanQ==}
+    engines: {node: '>= 7.6.0'}
 
   koa@2.15.3:
     resolution: {integrity: sha512-j/8tY9j5t+GVMLeioLaxweJiKUayFhlGqNTzf2ZGwL0ZCQijd2RLHK0SLW5Tsko8YyyqCZC2cojIb0/s62qTAg==}
@@ -4642,6 +4653,9 @@ packages:
     resolution: {integrity: sha512-2eznPJP8z2BFLX50tf0LuODrpINqP1RVIm/CObbTcBRITQgmC/TjcREF1NeTBzIcR5XO/ukWo+YHOjBbFwIupg==}
     hasBin: true
 
+  mz@2.7.0:
+    resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
+
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -4778,6 +4792,10 @@ packages:
     resolution: {integrity: sha512-7eM+hpOtrKrBDCh7Ypu2lJ9Z7PNZBdi/8AT3AX8xoCj43BBVHD0hPSTEvMtkMpfs8FCqBGhxB+uToIQimA111g==}
     engines: {node: ^14.16.0 || >=16.10.0}
     hasBin: true
+
+  object-assign@4.1.1:
+    resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
+    engines: {node: '>=0.10.0'}
 
   object-deep-merge@1.0.5:
     resolution: {integrity: sha512-3DioFgOzetbxbeUq8pB2NunXo8V0n4EvqsWM/cJoI6IA9zghd7cl/2pBOuWRf4dlvA+fcg5ugFMZaN2/RuoaGg==}
@@ -5747,6 +5765,13 @@ packages:
   text-decoder@1.2.3:
     resolution: {integrity: sha512-3/o9z3X0X0fTupwsYvR03pJ/DjWuqqrfwBgTQzdWDiQSm9KitAyz/9WqsT2JQW7KV2m+bC2ol/zqpW37NHxLaA==}
 
+  thenify-all@1.6.0:
+    resolution: {integrity: sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==}
+    engines: {node: '>=0.8'}
+
+  thenify@3.3.1:
+    resolution: {integrity: sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==}
+
   thingies@1.21.0:
     resolution: {integrity: sha512-hsqsJsFMsV+aD4s3CWKk85ep/3I9XzYV/IXaSouJMYIoDlgyi11cBhsqYe9/geRfB0YIikBQg6raRaM+nIMP9g==}
     engines: {node: '>=10.18'}
@@ -6519,8 +6544,8 @@ packages:
   youch@4.1.0-beta.11:
     resolution: {integrity: sha512-sQi6PERyO/mT8w564ojOVeAlYTtVQmC2GaktQAf+IdI75/GKIggosBuvyVXvEV+FATAT6RbLdIjFoiIId4ozoQ==}
 
-  z-chii@1.15.5-beta.1:
-    resolution: {integrity: sha512-w/YwXlAFkSSMSPCqZ9OZhnjW4snpIdqrqGfA9LtByN+1FoaWXW8Vibb0WfcB9RDid7VNkGAifdLNb/rRsC7D1g==}
+  z-chii@1.15.5-beta.5:
+    resolution: {integrity: sha512-PGH3Z3aUSap+6y+JL1yCuXj8xhOZj/AHty/olpm5bSXAKBcNyr/feSo0HZPvNQVX3D0O/pNN5V1qZRN4ooU3iQ==}
     hasBin: true
 
   zip-stream@6.0.1:
@@ -8986,6 +9011,8 @@ snapshots:
 
   ansis@4.2.0: {}
 
+  any-promise@1.3.0: {}
+
   anymatch@3.1.3:
     dependencies:
       normalize-path: 3.0.0
@@ -9515,6 +9542,10 @@ snapshots:
   debug@2.6.9:
     dependencies:
       ms: 2.0.0
+
+  debug@3.2.7:
+    dependencies:
+      ms: 2.1.3
 
   debug@4.4.3(supports-color@5.5.0):
     dependencies:
@@ -10846,10 +10877,11 @@ snapshots:
       koa-compose: 4.1.0
       path-to-regexp: 8.2.0
 
-  koa-send@5.0.1:
+  koa-send@5.0.0:
     dependencies:
-      debug: 4.4.3(supports-color@5.5.0)
+      debug: 3.2.7
       http-errors: 1.8.1
+      mz: 2.7.0
       resolve-path: 1.4.0
     transitivePeerDependencies:
       - supports-color
@@ -11433,6 +11465,12 @@ snapshots:
       dns-packet: 5.6.1
       thunky: 1.1.0
 
+  mz@2.7.0:
+    dependencies:
+      any-promise: 1.3.0
+      object-assign: 4.1.1
+      thenify-all: 1.6.0
+
   nanoid@3.3.11: {}
 
   nanoid@5.1.6: {}
@@ -11761,6 +11799,8 @@ snapshots:
       pathe: 2.0.3
       pkg-types: 2.3.0
       tinyexec: 1.0.1
+
+  object-assign@4.1.1: {}
 
   object-deep-merge@1.0.5:
     dependencies:
@@ -12858,6 +12898,14 @@ snapshots:
     transitivePeerDependencies:
       - react-native-b4a
 
+  thenify-all@1.6.0:
+    dependencies:
+      thenify: 3.3.1
+
+  thenify@3.3.1:
+    dependencies:
+      any-promise: 1.3.0
+
   thingies@1.21.0(tslib@2.6.2):
     dependencies:
       tslib: 2.6.2
@@ -13670,7 +13718,7 @@ snapshots:
       cookie: 1.0.2
       youch-core: 0.3.3
 
-  z-chii@1.15.5-beta.1:
+  z-chii@1.15.5-beta.5:
     dependencies:
       '@cypress/request': 3.0.7
       commander: 5.1.0
@@ -13678,7 +13726,7 @@ snapshots:
       koa: 2.15.3
       koa-compress: 4.0.1
       koa-router: 13.0.1
-      koa-send: 5.0.1
+      koa-send: 5.0.0
       licia: 1.46.0
       ws: 8.18.3
     transitivePeerDependencies:

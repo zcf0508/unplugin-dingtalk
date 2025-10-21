@@ -130,10 +130,11 @@
   },
   "dependencies": {
     "cookie": "^1.0.2",
+    "h3": "^1.15.4",
     "http-proxy": "^1.18.1",
     "picocolors": "^1.0.1",
     "unplugin": "2.2.0",
-    "z-chii": "1.15.5-beta.1"
+    "z-chii": "1.15.5-beta.5"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.0.0",
@@ -148,7 +149,6 @@
     "eslint-plugin-security": "^3.0.1",
     "fast-glob": "^3.3.2",
     "get-port-please": "^3.1.2",
-    "h3": "^1.15.4",
     "nodemon": "^3.0.2",
     "proper-lockfile": "^4.1.2",
     "rimraf": "^5.0.5",
