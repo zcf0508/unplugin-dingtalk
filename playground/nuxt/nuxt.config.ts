@@ -7,6 +7,9 @@ export default defineNuxtConfig({
     ['~/../../../src/nuxt', {
       enable: true,
       targetUrl: 'http://localhost:3000',
+      chii:{
+        // embedded: true,
+      },
       debug: true,
     }]
   ]

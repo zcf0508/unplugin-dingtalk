@@ -41,6 +41,11 @@ export default defineNuxtModule<ModuleOptions>({
 
     const enableChii = chii?.enable !== false;
 
+    // 将配置传递给 Nitro runtime
+    _nuxt.options.runtimeConfig.unpluginDingtalk = {
+      chiiEmbedded: chii?.embedded ?? false,
+    };
+
     if (enableChii) {
       const resolver = createResolver(import.meta.url);
 
