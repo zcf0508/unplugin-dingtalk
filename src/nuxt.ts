@@ -59,7 +59,6 @@ export default defineNuxtModule<ModuleOptions>({
         route: '/__chii_proxy',
         handler: defineEventHandler(async (event) => {
           if (resovedInfo.availablePort) {
-            debug('代理请求', event.path);
             return proxyRequest(event, `http://localhost:${resovedInfo.availablePort}${event.path}`);
           }
         }),
@@ -80,7 +79,6 @@ export default defineNuxtModule<ModuleOptions>({
 
             // 延迟创建 proxy
             if (!proxy && resovedInfo.availablePort) {
-              debug('创建 WebSocket 代理服务器到端口', resovedInfo.availablePort);
               proxy = httpProxy.createProxyServer({
                 target: `http://localhost:${resovedInfo.availablePort}`,
                 ws: true,

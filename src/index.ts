@@ -46,7 +46,6 @@ export function createProxyMiddleware(debug: typeof console.debug) {
       }
 
       if (!proxy && resolvedInfo.availablePort) {
-        console.log('target', `http://localhost:${resolvedInfo.availablePort}`);
         proxy = httpProxy.createProxyServer({
           target: `http://localhost:${resolvedInfo.availablePort}`,
           ws: true,
