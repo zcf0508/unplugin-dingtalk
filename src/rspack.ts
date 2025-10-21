@@ -1,9 +1,9 @@
-import { createRspackPlugin } from 'unplugin';
+import type { Options, RspackSetupMiddlewares } from './types';
 import cookie from 'cookie';
 import c from 'picocolors';
-import type { Options, RspackSetupMiddlewares } from './types';
-import { getChromeDevtoolsHtml } from './__chrome_devtools';
+import { createRspackPlugin } from 'unplugin';
 import { createProxyMiddleware, resovedInfo, unpluginFactory } from '.';
+import { getChromeDevtoolsHtml } from './__chrome_devtools';
 
 export default (options: Options) => {
   function debug(...args: Parameters<typeof console.log>) {

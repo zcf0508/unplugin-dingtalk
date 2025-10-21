@@ -1,25 +1,24 @@
-import process from 'node:process';
 import type { Buffer } from 'node:buffer';
 import type { IncomingMessage } from 'node:http';
+import type { UnpluginFactory, UnpluginOptions } from 'unplugin';
+import type { Connect, ResolvedConfig } from 'vite';
+import type { Options } from './types';
 import { ServerResponse } from 'node:http';
 import { Socket } from 'node:net';
-import type { UnpluginFactory, UnpluginOptions } from 'unplugin';
-import { createUnplugin } from 'unplugin';
-import type { Connect, ResolvedConfig } from 'vite';
-import c from 'picocolors';
+import process from 'node:process';
 import cookie from 'cookie';
-// @ts-expect-error missing types
-import { start } from 'z-chii';
 import { getRandomPort } from 'get-port-please';
 import httpProxy from 'http-proxy';
-import type { Options } from './types';
+import c from 'picocolors';
+import { createUnplugin } from 'unplugin';
+// @ts-expect-error missing types
+import { start } from 'z-chii';
 import { getChromeDevtoolsHtml } from './__chrome_devtools';
+import { colorUrl, isNuxtProject } from './utils';
 
 const cwd = process.cwd();
 
 let config: ResolvedConfig;
-
-const colorUrl = (url: string) => c.green(url.replace(/:(\d+)\//, (_, port) => `:${c.bold(port)}/`));
 
 export const resovedInfo = {
   availablePort: undefined as number | undefined,
@@ -40,7 +39,14 @@ export function createProxyMiddleware(debug: typeof console.debug) {
 
   return (resolvedInfo: { availablePort?: number }): Connect.NextHandleFunction => {
     return (req, res, next) => {
+      // 在代理之前就设置标记
+      if (req.url?.startsWith('/__chii_proxy')) {
+        // @ts-expect-error skip other transforms
+        req._skip_transform = true;
+      }
+
       if (!proxy && resolvedInfo.availablePort) {
+        console.log('target', `http://localhost:${resolvedInfo.availablePort}`);
         proxy = httpProxy.createProxyServer({
           target: `http://localhost:${resolvedInfo.availablePort}`,
           ws: true,
@@ -122,8 +128,8 @@ if (import.meta.hot) {
     script.id = '__chii_client';
     script.src="/__chii_proxy/target.js";
     ${options?.chii?.embedded
-    ? 'script.setAttribute(\'embedded\',\'true\');'
-    : ''}
+      ? 'script.setAttribute(\'embedded\',\'true\');'
+      : ''}
     document.body.appendChild(script);
   });
 }
@@ -243,8 +249,14 @@ if (import.meta.hot) {
             res.end();
           });
 
-          const proxyMiddleware = createProxyMiddleware(debug);
-          server.middlewares.use(proxyMiddleware(resovedInfo));
+          // 判断是否是 nuxt 环境
+          const isNuxt = isNuxtProject();
+
+          console.log('isNuxt', isNuxt);
+          if (!isNuxt) {
+            const proxyMiddleware = createProxyMiddleware(debug);
+            server.middlewares.use(proxyMiddleware(resovedInfo));
+          }
         }
 
         server.middlewares.use('/open-dingtalk', (req, res) => {

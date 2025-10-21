@@ -1,8 +1,8 @@
 import type { Plugin } from 'vite';
-import { createVitePlugin } from 'unplugin';
 import type { Options } from './types';
-import { interopDefault } from './utils';
+import { createVitePlugin } from 'unplugin';
 import { unpluginFactory } from '.';
+import { interopDefault } from './utils';
 
 export default async (options: Options) => {
   const plugins = [createVitePlugin(unpluginFactory)(options)] as Plugin[];

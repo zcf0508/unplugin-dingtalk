@@ -1,9 +1,9 @@
-import { createWebpackPlugin } from 'unplugin';
+import type { Options, SetupMiddlewares } from './types';
 import cookie from 'cookie';
 import c from 'picocolors';
-import type { Options, SetupMiddlewares } from './types';
-import { getChromeDevtoolsHtml } from './__chrome_devtools';
+import { createWebpackPlugin } from 'unplugin';
 import { createProxyMiddleware, resovedInfo, unpluginFactory } from '.';
+import { getChromeDevtoolsHtml } from './__chrome_devtools';
 
 export default (options: Options) => {
   function debug(...args: Parameters<typeof console.log>) {

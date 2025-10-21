@@ -37,4 +37,6 @@ export type RspackSetupMiddlewares = (
     unshift: (...handlers: RequestHandler[]) => void
     /** Use the `push` method if you want to run a middleware after all other middlewares */
     push: (...handlers: RequestHandler[]) => void
-  }, server: ServerAPIs) => void;
+  },
+  server: ServerAPIs,
+) => void;
