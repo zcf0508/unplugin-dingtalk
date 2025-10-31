@@ -1,6 +1,7 @@
 # unplugin-dingtalk
 
 [![NPM version](https://img.shields.io/npm/v/unplugin-dingtalk?color=a1b858&label=)](https://www.npmjs.com/package/unplugin-dingtalk)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/zcf0508/unplugin-dingtalk)
 
 一键启动钉钉内调试。支持 `vite`、`vue-cli`、`rsbuild`。
 
