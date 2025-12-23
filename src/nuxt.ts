@@ -5,7 +5,7 @@ import type { Options } from './types';
 import { addDevServerHandler, addServerPlugin, addVitePlugin, addWebpackPlugin, createResolver, defineNuxtModule } from '@nuxt/kit';
 import httpProxy from 'http-proxy';
 import c from 'picocolors';
-import { CHII_DEVTOOLS_PATH, CHII_PROXY_PATH, resovedInfo } from '.';
+import { CHII_DEVTOOLS_PATH, CHII_PROXY_PATH, getChiiClientModuleCode, resovedInfo, VIRTUAL_CHII_CLIENT } from '.';
 import { colorUrl, interopDefault } from './utils';
 import vite from './vite';
 import webpack from './webpack';
@@ -46,6 +46,7 @@ export default defineNuxtModule<ModuleOptions>({
     _nuxt.options.runtimeConfig.unpluginDingtalk = {
       chiiEmbedded: chii?.embedded ?? false,
       chiiProxyPath: CHII_PROXY_PATH,
+      chiiClientPath: VIRTUAL_CHII_CLIENT,
     };
 
     if (enableChii) {
@@ -119,6 +120,13 @@ export default defineNuxtModule<ModuleOptions>({
             listener.call(server, req, socket, head);
           }
         });
+      });
+
+      addDevServerHandler({
+        route: VIRTUAL_CHII_CLIENT,
+        handler: defineEventHandler(async () => {
+          return getChiiClientModuleCode(!!options?.chii?.embedded);
+        }),
       });
 
       addDevServerHandler({

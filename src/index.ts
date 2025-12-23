@@ -20,7 +20,7 @@ const cwd = process.cwd();
 const projectHash = getProjectHash();
 export const CHII_PROXY_PATH = `/__chii_proxy_${projectHash}`;
 export const CHII_DEVTOOLS_PATH = `/__chrome_devtools_${projectHash}`;
-const VIRTUAL_CHII_CLIENT = `/__chii_client_${projectHash}.js`;
+export const VIRTUAL_CHII_CLIENT = `/__chii_client_${projectHash}.js`;
 
 let config: ResolvedConfig;
 
@@ -74,20 +74,50 @@ export function createProxyMiddleware(debug: typeof console.debug, proxyPath: st
         }
       }
 
-      if (proxy && req.url?.startsWith(proxyPath)) {
-        debug(req.url);
-        req.url = req.url.replace(proxyPath, '');
-        proxy.web(req, res);
+      if (proxy && req.url) {
+        const url = new URL(req.url, 'http://localhost');
+        if (url.pathname.startsWith(proxyPath)) {
+          debug('Proxying request:', req.url);
+          req.url = req.url.replace(proxyPath, '');
+          proxy.web(req, res);
+          return;
+        }
       }
-      else {
-        next();
-      }
+      next();
     };
   };
 }
 
 // 判断是否是 nuxt 环境
 const isNuxt = isNuxtProject();
+
+export function getChiiClientModuleCode(embedded: boolean) {
+  return `
+;(function(){
+  if (document.getElementById('__chii_client')) return;
+  const script = document.createElement('script');
+  script.id = '__chii_client';
+  script.src="${CHII_PROXY_PATH}/target.js";
+  ${embedded
+    ? 'script.setAttribute(\'embedded\',\'true\');'
+    : ''}
+  document.body.appendChild(script);
+})();
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    const old = document.getElementById('__chii_client');
+    if (old) old.remove();
+    const script = document.createElement('script');
+    script.id = '__chii_client';
+    script.src="${CHII_PROXY_PATH}/target.js";
+    ${embedded
+      ? 'script.setAttribute(\'embedded\',\'true\');'
+      : ''}
+    document.body.appendChild(script);
+  });
+}
+  `;
+}
 
 export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (options) => {
   const {
@@ -114,32 +144,8 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       return id === VIRTUAL_CHII_CLIENT;
     },
     load(id) {
-      if (id === VIRTUAL_CHII_CLIENT) {
-        return `
-;(function(){
-  if (document.getElementById('__chii_client')) return;
-  const script = document.createElement('script');
-  script.id = '__chii_client';
-  script.src="${CHII_PROXY_PATH}/target.js";
-  ${options?.chii?.embedded
-    ? 'script.setAttribute(\'embedded\',\'true\');'
-    : ''}
-  document.body.appendChild(script);
-})();
-if (import.meta.hot) {
-  import.meta.hot.accept(() => {
-    const old = document.getElementById('__chii_client');
-    if (old) old.remove();
-    const script = document.createElement('script');
-    script.id = '__chii_client';
-    script.src="${CHII_PROXY_PATH}/target.js";
-    ${options?.chii?.embedded
-      ? 'script.setAttribute(\'embedded\',\'true\');'
-      : ''}
-    document.body.appendChild(script);
-  });
-}
-        `;
+      if (id === VIRTUAL_CHII_CLIENT || id.endsWith(VIRTUAL_CHII_CLIENT)) {
+        return getChiiClientModuleCode(!!options?.chii?.embedded);
       }
     },
     transformInclude(id) {
@@ -244,6 +250,22 @@ if (import.meta.hot) {
         }
 
         if (enableChii) {
+          server.middlewares.use(VIRTUAL_CHII_CLIENT, async (_req, res) => {
+            const code = unpluginDing.load?.call(unpluginDing as any, VIRTUAL_CHII_CLIENT);
+            debug('load virtual chii client:', VIRTUAL_CHII_CLIENT, !!code);
+            if (code) {
+              const content = typeof code === 'string'
+                ? code
+                : (code as any).code ?? getChiiClientModuleCode(!!options?.chii?.embedded);
+              res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+              res.write(content || '');
+              res.end();
+              return;
+            }
+            res.writeHead(404);
+            res.end();
+          });
+
           server.middlewares.use(CHII_DEVTOOLS_PATH, async (_req, res) => {
             if (!resovedInfo.availablePort) {
               res.writeHead(500, { 'Content-Type': 'text/plain' });

@@ -2,7 +2,7 @@ import type { Options, SetupMiddlewares } from './types';
 import cookie from 'cookie';
 import c from 'picocolors';
 import { createWebpackPlugin } from 'unplugin';
-import { CHII_DEVTOOLS_PATH, CHII_PROXY_PATH, createProxyMiddleware, resovedInfo, unpluginFactory } from '.';
+import { CHII_DEVTOOLS_PATH, CHII_PROXY_PATH, createProxyMiddleware, getChiiClientModuleCode, resovedInfo, unpluginFactory, VIRTUAL_CHII_CLIENT } from '.';
 import { getChromeDevtoolsHtml } from './__chrome_devtools';
 
 export default (options: Options) => {
@@ -48,6 +48,13 @@ export default (options: Options) => {
     }
 
     if (enableChii) {
+      devServer.app!.get(VIRTUAL_CHII_CLIENT, async (_req, res) => {
+        const content = getChiiClientModuleCode(!!options?.chii?.embedded);
+        res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+        res.write(content);
+        res.end();
+      });
+
       devServer.app!.get(CHII_DEVTOOLS_PATH, async (_req, res) => {
         try {
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });

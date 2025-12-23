@@ -6,10 +6,17 @@ export default defineNitroPlugin((nitroApp: any) => {
     const config = useRuntimeConfig();
     const embedded = config.unpluginDingtalk?.chiiEmbedded ?? false;
     const proxyPath = config.unpluginDingtalk?.chiiProxyPath || '/__chii_proxy';
+    const clientPath = config.unpluginDingtalk?.chiiClientPath;
 
-    const scriptTag = embedded
-      ? `<script src="${proxyPath}/target.js" embedded="true"></script>`
-      : `<script src="${proxyPath}/target.js"></script>`;
+    let scriptTag = '';
+    if (clientPath) {
+      scriptTag = `<script type="module">import '${clientPath}';</script>`;
+    }
+    else {
+      scriptTag = embedded
+        ? `<script src="${proxyPath}/target.js" embedded="true"></script>`
+        : `<script src="${proxyPath}/target.js"></script>`;
+    }
 
     html.bodyAppend.push(scriptTag);
   });
