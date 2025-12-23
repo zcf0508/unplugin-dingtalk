@@ -5,10 +5,11 @@ export default defineNitroPlugin((nitroApp: any) => {
   nitroApp.hooks.hook('render:html', (html: any) => {
     const config = useRuntimeConfig();
     const embedded = config.unpluginDingtalk?.chiiEmbedded ?? false;
+    const proxyPath = config.unpluginDingtalk?.chiiProxyPath || '/__chii_proxy';
 
     const scriptTag = embedded
-      ? '<script src="/__chii_proxy/target.js" embedded="true"></script>'
-      : '<script src="/__chii_proxy/target.js"></script>';
+      ? `<script src="${proxyPath}/target.js" embedded="true"></script>`
+      : `<script src="${proxyPath}/target.js"></script>`;
 
     html.bodyAppend.push(scriptTag);
   });

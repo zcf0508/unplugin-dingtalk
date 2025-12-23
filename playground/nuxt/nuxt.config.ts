@@ -15,5 +15,8 @@ export default defineNuxtConfig({
       },
       debug: true,
     }]
-  ]
+  ],
+  devServer: {
+    port: 6585,
+  },
 })

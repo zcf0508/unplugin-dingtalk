@@ -2,7 +2,7 @@ import type { Options, SetupMiddlewares } from './types';
 import cookie from 'cookie';
 import c from 'picocolors';
 import { createWebpackPlugin } from 'unplugin';
-import { createProxyMiddleware, resovedInfo, unpluginFactory } from '.';
+import { CHII_DEVTOOLS_PATH, CHII_PROXY_PATH, createProxyMiddleware, resovedInfo, unpluginFactory } from '.';
 import { getChromeDevtoolsHtml } from './__chrome_devtools';
 
 export default (options: Options) => {
@@ -48,10 +48,10 @@ export default (options: Options) => {
     }
 
     if (enableChii) {
-      devServer.app!.get('/__chrome_devtools', async (_req, res) => {
+      devServer.app!.get(CHII_DEVTOOLS_PATH, async (_req, res) => {
         try {
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-          res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!));
+          res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!, CHII_PROXY_PATH));
           res.end();
         }
         catch (error) {
@@ -61,7 +61,7 @@ export default (options: Options) => {
         }
       });
 
-      const proxyMiddleware = createProxyMiddleware(debug);
+      const proxyMiddleware = createProxyMiddleware(debug, CHII_PROXY_PATH);
       devServer.app!.use(proxyMiddleware(resovedInfo));
     }
 

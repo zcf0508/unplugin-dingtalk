@@ -5,7 +5,7 @@ import type { Options } from './types';
 import { addDevServerHandler, addServerPlugin, addVitePlugin, addWebpackPlugin, createResolver, defineNuxtModule } from '@nuxt/kit';
 import httpProxy from 'http-proxy';
 import c from 'picocolors';
-import { resovedInfo } from '.';
+import { CHII_DEVTOOLS_PATH, CHII_PROXY_PATH, resovedInfo } from '.';
 import { colorUrl, interopDefault } from './utils';
 import vite from './vite';
 import webpack from './webpack';
@@ -45,6 +45,7 @@ export default defineNuxtModule<ModuleOptions>({
     // 将配置传递给 Nitro runtime
     _nuxt.options.runtimeConfig.unpluginDingtalk = {
       chiiEmbedded: chii?.embedded ?? false,
+      chiiProxyPath: CHII_PROXY_PATH,
     };
 
     if (enableChii) {
@@ -57,10 +58,10 @@ export default defineNuxtModule<ModuleOptions>({
 
       // HTTP 代理处理（保持原样）
       addDevServerHandler({
-        route: '/__chii_proxy',
+        route: CHII_PROXY_PATH,
         handler: defineEventHandler(async (event) => {
           if (resovedInfo.availablePort) {
-            return proxyRequest(event, `http://localhost:${resovedInfo.availablePort}${event.path}`);
+            return proxyRequest(event, `http://localhost:${resovedInfo.availablePort}${event.path.replace(CHII_PROXY_PATH, '')}`);
           }
         }),
       });
@@ -75,7 +76,7 @@ export default defineNuxtModule<ModuleOptions>({
 
         // 添加我们的 upgrade 处理器（优先级最高）
         server.on('upgrade', (req: IncomingMessage, socket: Socket, head: Buffer) => {
-          if (req.url?.startsWith('/__chii_proxy')) {
+          if (req.url?.startsWith(CHII_PROXY_PATH)) {
             debug('WS upgrade:', req.url);
 
             // 延迟创建 proxy
@@ -93,7 +94,7 @@ export default defineNuxtModule<ModuleOptions>({
 
             if (proxy) {
               // 修改 URL 去掉前缀
-              req.url = req.url.replace('/__chii_proxy', '');
+              req.url = req.url.replace(CHII_PROXY_PATH, '');
 
               // 添加错误处理，防止连接异常
               socket.on('error', (err) => {
@@ -119,6 +120,17 @@ export default defineNuxtModule<ModuleOptions>({
           }
         });
       });
+
+      addDevServerHandler({
+        route: CHII_DEVTOOLS_PATH,
+        handler: defineEventHandler(async (event) => {
+          if (!resovedInfo.availablePort) {
+            return 'Server not started';
+          }
+          const { getChromeDevtoolsHtml } = await import('./__chrome_devtools');
+          return getChromeDevtoolsHtml(resovedInfo.availablePort, CHII_PROXY_PATH);
+        }),
+      });
     }
 
     const vitePlugins = await vite(options);
@@ -136,7 +148,7 @@ export default defineNuxtModule<ModuleOptions>({
         console.log(
           `  ${c.green('➜')}  ${c.bold(
             'Click to open chrome devtools',
-          )}: ${colorUrl(`http://${source.replace('0.0.0.0', 'localhost')}/__chrome_devtools`)}`,
+          )}: ${colorUrl(`http://${source.replace('0.0.0.0', 'localhost')}${CHII_DEVTOOLS_PATH}`)}`,
         );
       }
     });

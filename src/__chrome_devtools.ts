@@ -1,4 +1,4 @@
-export function getChromeDevtoolsHtml(targetPort: number) {
+export function getChromeDevtoolsHtml(targetPort: number, proxyPath: string) {
   return `<!DOCTYPE html>
 <html>
 
@@ -52,7 +52,7 @@ export function getChromeDevtoolsHtml(targetPort: number) {
       const list = document.getElementById("target-list");
       list.innerHTML = "<li>加载中...</li>";
       try {
-        const resp = await fetch("/__chii_proxy/targets");
+        const resp = await fetch("${proxyPath}/targets");
         const data = await resp.json();
         const targets = data.targets || [];
         if (targets.length === 0) {

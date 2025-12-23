@@ -14,9 +14,13 @@ import { createUnplugin } from 'unplugin';
 // @ts-expect-error missing types
 import { start } from 'z-chii';
 import { getChromeDevtoolsHtml } from './__chrome_devtools';
-import { colorUrl, isNuxtProject } from './utils';
+import { colorUrl, getProjectHash, isNuxtProject } from './utils';
 
 const cwd = process.cwd();
+const projectHash = getProjectHash();
+export const CHII_PROXY_PATH = `/__chii_proxy_${projectHash}`;
+export const CHII_DEVTOOLS_PATH = `/__chrome_devtools_${projectHash}`;
+const VIRTUAL_CHII_CLIENT = `/__chii_client_${projectHash}.js`;
 
 let config: ResolvedConfig;
 
@@ -26,13 +30,13 @@ export const resovedInfo = {
 };
 
 // Proxy for Chii
-export function createProxyMiddleware(debug: typeof console.debug) {
+export function createProxyMiddleware(debug: typeof console.debug, proxyPath: string) {
   let proxy: httpProxy | null = null;
 
   const handleUpgrade = (req: IncomingMessage, socket: Socket, head: Buffer) => {
-    if (proxy && req.url?.startsWith('/__chii_proxy')) {
+    if (proxy && req.url?.startsWith(proxyPath)) {
       debug('WS upgrade:', req.url);
-      req.url = req.url.replace('/__chii_proxy', '');
+      req.url = req.url.replace(proxyPath, '');
       proxy.ws(req, socket, head);
     }
   };
@@ -40,7 +44,7 @@ export function createProxyMiddleware(debug: typeof console.debug) {
   return (resolvedInfo: { availablePort?: number }): Connect.NextHandleFunction => {
     return (req, res, next) => {
       // 在代理之前就设置标记
-      if (req.url?.startsWith('/__chii_proxy')) {
+      if (req.url?.startsWith(proxyPath)) {
         // @ts-expect-error skip other transforms
         req._skip_transform = true;
       }
@@ -70,9 +74,9 @@ export function createProxyMiddleware(debug: typeof console.debug) {
         }
       }
 
-      if (proxy && req.url?.startsWith('/__chii_proxy')) {
+      if (proxy && req.url?.startsWith(proxyPath)) {
         debug(req.url);
-        req.url = req.url.replace('/__chii_proxy', '');
+        req.url = req.url.replace(proxyPath, '');
         proxy.web(req, res);
       }
       else {
@@ -102,21 +106,21 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
     name: 'unplugin-dingtalk',
     enforce: 'pre',
     resolveId(source) {
-      if (source === 'chii-client') {
-        return source;
+      if (source === 'chii-client' || source === VIRTUAL_CHII_CLIENT) {
+        return VIRTUAL_CHII_CLIENT;
       }
     },
     loadInclude(id) {
-      return id === 'chii-client';
+      return id === VIRTUAL_CHII_CLIENT;
     },
     load(id) {
-      if (id === 'chii-client') {
+      if (id === VIRTUAL_CHII_CLIENT) {
         return `
 ;(function(){
   if (document.getElementById('__chii_client')) return;
   const script = document.createElement('script');
   script.id = '__chii_client';
-  script.src="/__chii_proxy/target.js";
+  script.src="${CHII_PROXY_PATH}/target.js";
   ${options?.chii?.embedded
     ? 'script.setAttribute(\'embedded\',\'true\');'
     : ''}
@@ -128,7 +132,7 @@ if (import.meta.hot) {
     if (old) old.remove();
     const script = document.createElement('script');
     script.id = '__chii_client';
-    script.src="/__chii_proxy/target.js";
+    script.src="${CHII_PROXY_PATH}/target.js";
     ${options?.chii?.embedded
       ? 'script.setAttribute(\'embedded\',\'true\');'
       : ''}
@@ -158,7 +162,7 @@ if (import.meta.hot) {
           && !isNuxt
         ) {
           return {
-            code: `import 'chii-client';\n${source}`,
+            code: `import '${VIRTUAL_CHII_CLIENT}';\n${source}`,
             map: null,
           };
         }
@@ -171,7 +175,7 @@ if (import.meta.hot) {
       },
       transformIndexHtml(html: string) {
         if (options?.enable && enableChii && !isNuxt) {
-          const tag = '<script type="module">import \'chii-client\';</script>';
+          const tag = `<script type="module">import '${VIRTUAL_CHII_CLIENT}';</script>`;
           if (!html.includes(tag)) {
             return html.replace(
               '</body>',
@@ -205,7 +209,7 @@ if (import.meta.hot) {
           if (enableChii) {
             console.log(`  ${c.green('➜')}  ${c.bold(
               'Click to open chrome devtools',
-            )}: ${colorUrl(`http://${source}${base}__chrome_devtools`)}`);
+            )}: ${colorUrl(`http://${source}${base}${CHII_DEVTOOLS_PATH.replace(/^\//, '')}`)}`);
           }
         };
 
@@ -240,7 +244,7 @@ if (import.meta.hot) {
         }
 
         if (enableChii) {
-          server.middlewares.use('/__chrome_devtools', async (_req, res) => {
+          server.middlewares.use(CHII_DEVTOOLS_PATH, async (_req, res) => {
             if (!resovedInfo.availablePort) {
               res.writeHead(500, { 'Content-Type': 'text/plain' });
               res.end('Server not started');
@@ -248,12 +252,12 @@ if (import.meta.hot) {
             }
 
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!));
+            res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!, CHII_PROXY_PATH));
             res.end();
           });
 
           if (!isNuxt) {
-            const proxyMiddleware = createProxyMiddleware(debug);
+            const proxyMiddleware = createProxyMiddleware(debug, CHII_PROXY_PATH);
             server.middlewares.use(proxyMiddleware(resovedInfo));
           }
         }
@@ -293,7 +297,7 @@ if (import.meta.hot) {
         if (enableChii) {
           console.log(`  ${c.green('➜')}  ${c.bold(
             'Click to open chrome devtools',
-          )}: ${colorUrl(`http://${source}${base}__chrome_devtools`)}`);
+          )}: ${colorUrl(`http://${source}${base}${CHII_DEVTOOLS_PATH.replace(/^\//, '')}`)}`);
         }
       });
 
@@ -335,7 +339,7 @@ if (import.meta.hot) {
       if (enableChii) {
         console.log(`  ${c.green('➜')}  ${c.bold(
           'Click to open chrome devtools',
-        )}: ${colorUrl(`http://${source}${base}__chrome_devtools`)}`);
+        )}: ${colorUrl(`http://${source}${base}${CHII_DEVTOOLS_PATH.replace(/^\//, '')}`)}`);
       }
     },
   };

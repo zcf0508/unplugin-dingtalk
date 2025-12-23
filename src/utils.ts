@@ -1,8 +1,16 @@
 import { existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import process from 'node:process';
 import c from 'picocolors';
 
 export type Awaitable<T> = T | Promise<T>;
+
+export function getProjectHash() {
+  return createHash('md5')
+    .update(process.cwd())
+    .digest('hex')
+    .slice(0, 8);
+}
 
 export async function interopDefault<T>(m: Awaitable<T>): Promise<T extends { default: infer U } ? U : T> {
   const resolved = await m;
