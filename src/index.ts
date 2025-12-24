@@ -18,9 +18,9 @@ import { colorUrl, getProjectHash, isNuxtProject } from './utils';
 
 const cwd = process.cwd();
 const projectHash = getProjectHash();
-export const CHII_PROXY_PATH = `/__chii_proxy_${projectHash}`;
-export const CHII_DEVTOOLS_PATH = `/__chrome_devtools_${projectHash}`;
-export const VIRTUAL_CHII_CLIENT = `/__chii_client_${projectHash}.js`;
+export const CHII_PROXY_PATH = `/${projectHash}/__chii_proxy`;
+export const CHII_DEVTOOLS_PATH = `/${projectHash}/__chrome_devtools`;
+export const VIRTUAL_CHII_CLIENT = `/${projectHash}/__chii_client.js`;
 
 let config: ResolvedConfig;
 
