@@ -134,7 +134,7 @@
     "http-proxy": "^1.18.1",
     "picocolors": "^1.0.1",
     "unplugin": "2.2.0",
-    "z-chii": "1.15.5-beta.5"
+    "z-chii": "1.15.6-beta.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.0.0",
