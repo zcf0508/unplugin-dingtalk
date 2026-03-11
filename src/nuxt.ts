@@ -136,7 +136,7 @@ export default defineNuxtModule<ModuleOptions>({
             return 'Server not started';
           }
           const { getChromeDevtoolsHtml } = await import('./__chrome_devtools');
-          return getChromeDevtoolsHtml(resovedInfo.availablePort, CHII_PROXY_PATH);
+          return getChromeDevtoolsHtml(CHII_PROXY_PATH);
         }),
       });
     }

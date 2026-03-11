@@ -64,7 +64,7 @@ export default (options: Options) => {
         }
         try {
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-          res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!, CHII_PROXY_PATH));
+          res.write(getChromeDevtoolsHtml(CHII_PROXY_PATH));
           res.end();
         }
         catch (error) {

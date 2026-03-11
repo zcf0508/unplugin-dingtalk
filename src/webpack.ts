@@ -58,7 +58,7 @@ export default (options: Options) => {
       devServer.app!.get(CHII_DEVTOOLS_PATH, async (_req, res) => {
         try {
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-          res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!, CHII_PROXY_PATH));
+          res.write(getChromeDevtoolsHtml(CHII_PROXY_PATH));
           res.end();
         }
         catch (error) {

@@ -155,7 +155,14 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
       // initialize server once
       if (options?.enable && enableChii && !resovedInfo.availablePort) {
         resovedInfo.availablePort = await getRandomPort();
-        start({ port: resovedInfo.availablePort });
+        const viteHost = config
+          ? `localhost:${config.server.port || 5173}`
+          : undefined;
+        start({
+          port: resovedInfo.availablePort,
+          domain: viteHost,
+          basePath: `${CHII_PROXY_PATH}/`,
+        });
         debug(`chii server port: ${resovedInfo.availablePort}`);
       }
       // inject client script at first user code module
@@ -274,7 +281,7 @@ export const unpluginFactory: UnpluginFactory<Options | undefined, boolean> = (o
             }
 
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            res.write(getChromeDevtoolsHtml(resovedInfo.availablePort!, CHII_PROXY_PATH));
+            res.write(getChromeDevtoolsHtml(CHII_PROXY_PATH));
             res.end();
           });
 

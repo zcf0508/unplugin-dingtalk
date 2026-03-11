@@ -1,4 +1,4 @@
-export function getChromeDevtoolsHtml(targetPort: number, proxyPath: string) {
+export function getChromeDevtoolsHtml(proxyPath: string) {
   return `<!DOCTYPE html>
 <html>
 
@@ -59,9 +59,16 @@ export function getChromeDevtoolsHtml(targetPort: number, proxyPath: string) {
           list.innerHTML = "<li>暂无可用的调试目标。</li>";
         } else {
           list.innerHTML = "";
+          const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+          const domain = location.host;
           for (const target of targets) {
             console.log(target)
-            const devToolsUrl = "http://localhost:${targetPort}/front_end/chii_app.html?ws=localhost:${targetPort}/client/" + Math.random().toString(20).substring(2, 8) + "?target=" + encodeURIComponent(target.id) + "&rtc=false";
+            const clientId = Math.random().toString(20).substring(2, 8);
+            const wsParam = encodeURIComponent(
+              domain + "${proxyPath}/client/" + clientId + "?target=" + target.id
+            );
+            const devToolsUrl = "${proxyPath}/front_end/chii_app.html?"
+              + protocol + "=" + wsParam + "&rtc=false";
             const item = document.createElement("li");
             item.innerHTML =
               "<div><strong>" + (target.title) + "</strong></div>" +
